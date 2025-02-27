@@ -2,9 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,5 +20,24 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
+}
+.frontImage {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.frontImage {
+  background-image: url('https://cdn.pixabay.com/photo/2024/01/19/09/45/ai-generated-8518509_1280.png');
+  background-size: cover;   /* Ensures the image covers the div */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat; /* Prevents tiling */
+  width: 10rem;
+  height: 10rem;
+}
+
+.frontMain{
+  /* background: rgb(77,46,166);
+  background: linear-gradient(222deg, rgba(77,46,166,1) 17%, rgba(154,181,234,1) 50%, rgba(71,154,249,1) 60%, rgba(0,115,230,1) 76%); */
 }
