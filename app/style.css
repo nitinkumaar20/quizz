@@ -1,10 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Rubik+Dirt&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Rubik+Dirt&display=swap'); */
 
-
+@import url('https://fonts.googleapis.com/css2?family=Wellfleet&display=swap');
 
 
 body {
-    font-family: "Rubik Dirt", cursive; /* Fixed the font-family */
-    font-style: normal;
-    font-weight: 300;
+    /* font-family: "Rubik Dirt", cursive;  */
+    /* font-style: normal; */
+    /* font-weight: 300; */
+
+        font-family: "Wellfleet", serif;
+        font-weight: 400;
+        font-style: normal;
+      
 }

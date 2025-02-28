@@ -1,16 +1,22 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Bottom from "./Bottom";
+import Bottom from "./BottomOne";
 
 const Front = () => {
   const [animate, setAnimate] = useState(false);
+  const [category, setCategory] = useState("");
 
+  const categories = [
+    { value: "ssc", label: "SSC Exams" },
+    { value: "banking", label: "Banking Exams" },
+    { value: "railway", label: "Railway Exams" },
+  ];
   useEffect(() => {
     setAnimate(true);
   }, []);
   return (
     <div>
-      <div className="frontMain bg-purple-500 rounded-b-3xl  h-[17rem] w-full py-5 gap-5">
+      <div className="frontMain bg-purple-500 rounded-b-3xl  h-[20rem] w-full py-5 gap-5">
         <div className="  flex justify-center items-center">
           {/* <div className="frontImage bg-blue-400 rounded-xl  h-15 w-15"></div>  */}
           {/* image div -------------------------*/}
@@ -47,7 +53,31 @@ const Front = () => {
         </div>
       </div>
 
-      <div className="h-[100rem]"></div>
+      <div className="h-[100rem] ">
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <h1>Select a Quiz</h1>
+
+        <div className="flex flex-col space-y-4 ">
+          {/* <label className="text-lg font-semibold">Select a Category:</label> */}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="pr-24 py-2 border rounded-md "
+          >
+            <option value="" disabled className="px-10 py-2 ">
+              Select an option
+            </option>
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+
+          {/* {category && <p className="text-blue-600">Selected: {category}</p>} */}
+        </div>
+        </div>
+      </div>
 
       <Bottom />
     </div>
