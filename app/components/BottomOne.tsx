@@ -2,7 +2,7 @@ import React from 'react'
 
 const Bottom = () => {
   return (
-    <div className="bg-blue-500  h-[3rem] w-full fixed bottom-0 left-0">
+    <div className="bg-[--tertiary] border-t h-[3rem] w-full fixed bottom-0 left-0">
     {/* home  */}
     <div className="flex justify-around items-center h-full">
       <div className="">

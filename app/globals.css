@@ -7,6 +7,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #ee8f7b;
+  --secondary: #f0bd71;
+  --tertiary: #ffffff;
+  --textColor: #171717;
 
 }
 
@@ -22,6 +26,10 @@ body {
   background: var(--background);
   /* font-family: Arial, Helvetica, sans-serif; */
 }
+
+
+
+
 .frontImage {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -40,4 +48,28 @@ body {
 .frontMain{
   /* background: rgb(77,46,166);
   background: linear-gradient(222deg, rgba(77,46,166,1) 17%, rgba(154,181,234,1) 50%, rgba(71,154,249,1) 60%, rgba(0,115,230,1) 76%); */
+}
+
+
+
+
+
+
+@keyframes orbit1 {
+  0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+@keyframes orbit2 {
+  0% { transform: rotate(120deg) translateX(60px) rotate(-120deg); }
+  100% { transform: rotate(480deg) translateX(60px) rotate(-480deg); }
+}
+@keyframes orbit3 {
+  0% { transform: rotate(240deg) translateX(60px) rotate(-240deg); }
+  100% { transform: rotate(600deg) translateX(60px) rotate(-600deg); }
+}
+
+@layer utilities {
+  .animate-orbit1 { animation: orbit1 5s linear infinite; }
+  .animate-orbit2 { animation: orbit2 5s linear infinite; }
+  .animate-orbit3 { animation: orbit3 5s linear infinite; }
 }
