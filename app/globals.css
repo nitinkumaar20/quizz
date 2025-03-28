@@ -7,8 +7,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: #ee8f7b;
-  --secondary: #f0bd71;
+  /* --primary: #ee8f7b; */
+  --primary: #758ab8;
+  /* --secondary: #f0bd71; */
+  --secondary: #474747;
   --tertiary: #ffffff;
   --textColor: #171717;
 
