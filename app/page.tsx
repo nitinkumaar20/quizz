@@ -1,16 +1,25 @@
 import React from "react";
-import First from "./components/Front";
+import FrontMobile from "./components/FrontMobile";
 import "./style.css";
-import Bottom from "./components/BottomOne";
+import FooterMobile from "./components/FooterMobile";
 import Middle from "./components/Middle";
-
+import FooterDesktop from "./components/FooterDesktop";
+import FrontDesktop from "./components/FrontDesktop";
 
 export default function Home() {
   return (
     <div className="home">
-      <First />
+      <div>
+        <div className="block lg:hidden">
+          <FrontMobile />
+          <FooterMobile />
+        </div>
         <Middle />
-      <Bottom />
+        <div className="hidden lg:block">
+          <FrontDesktop/>
+          <FooterDesktop />
+        </div>
+      </div>
     </div>
   );
 }
