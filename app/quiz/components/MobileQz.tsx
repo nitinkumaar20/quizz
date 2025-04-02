@@ -20,7 +20,7 @@ const MobileQz = () => {
             <h1>5</h1>
           </div>
         </div>
-        <div className="flex flex-wrap justify-start gap-1 items-center mx-5 mt-[-1rem] text-md">
+        <div className="flex flex-wrap justify-start gap-1 items-center mx-5 mt-[-1rem] text-md sm:text-lg md:text-xl">
           {/* Top Row */}
           <div className="flex justify-center items-center gap-2 ">
             <div className="w-3 h-3 bg-green-500"></div>
@@ -44,7 +44,7 @@ const MobileQz = () => {
           <option value="hi">Hindi</option>
         </select>
 
-        <div className=" bg-[--primary] rounded-md text-lg py-2 px-4">
+        <div className=" bg-[--primary] rounded-md text-lg py-2 px-4 font-bold sm:py-4 sm:px-8 md:py-8 md:px-10">
           <h1>19:05</h1>
         </div>
         <div>
@@ -52,25 +52,25 @@ const MobileQz = () => {
         </div>
       </div>
       <div className="flex justify-center gap-2 mx-2 my-2 mt-3 ">
-        <div className="text-center w-6 h-6 bg-green-500 rounded-lg">1</div>
-        <div className="text-center w-6 h-6 bg-red-500 rounded-lg">2</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">3</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">5</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">6</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">7</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">8</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">9</div>
-        <div className="text-center w-6 h-6 border rounded-lg ">10</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 bg-green-500 rounded-lg">1</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 bg-red-500 rounded-lg">2</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">3</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">5</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">6</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">7</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">8</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">9</div>
+        <div className=" w-6 h-6  sm:w-8 flex justify-center items-center sm:h-8 md:h-12 md:w-12 border rounded-lg ">10</div>
       </div>
       <div className="border-[2px] border-[--primary]   p-2 m-5 rounded-lg ">
         {/* questions div */}
         <div>
-          <h1 className="capitalize text-2xl font-semibold">
+          <h1 className="capitalize text-2xl sm:text-4xl md:text-[3rem] font-semibold">
             1.which one is the major cities of indus valley civilization.
           </h1>
         </div>
 
-        <div className="flex flex-col mt-4 gap-2 text-lg">
+        <div className="flex flex-col mt-4 gap-2 text-lg sm:text-xl md:text-2xl">
           <div>
             <p className="capitalize px-3 py-1 bg-slate-300  rounded-lg hover:bg-green-500">
               harappa and mohenjo-daro

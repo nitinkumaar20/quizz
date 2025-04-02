@@ -4,7 +4,7 @@ const AnimatedCircles = () => {
   return (
     <div className="relative flex items-center justify-center">
       {/* Main Circle */}
-      <div className="w-36 h-36  bg-center">
+      <div className=" bg-center w-40 h-40 sm:w-64 sm:h-72 md:w-64 md:h-64 lg:w-80 rounded-full bg-[--primary] flex items-center justify-center  transition-all duration-500 hover:scale-105">
         <Image
           src="https://lh3.googleusercontent.com/d/1Px6edZckEg5s8SwTJZtmNvQ_4f_izd4t=s220?authuser=0"
           alt="Google Drive Image"
@@ -12,6 +12,7 @@ const AnimatedCircles = () => {
           height={140}
           layout="responsive"
         />
+        {/* <img className="w-36 h-36 " src="https://lh3.googleusercontent.com/d/1Px6edZckEg5s8SwTJZtmNvQ_4f_izd4t=s220?authuser=0" alt="" /> */}
       </div>
 
       {/* Small Circles with Orbit Animation */}
