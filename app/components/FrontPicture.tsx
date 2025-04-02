@@ -1,18 +1,18 @@
 import React from "react";
-import Image from "next/image";
+// import Image from "next/image";
 const AnimatedCircles = () => {
   return (
     <div className="relative flex items-center justify-center">
       {/* Main Circle */}
-      <div className=" bg-center w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-90  rounded-full bg-[--primary] flex items-center justify-center  transition-all duration-500 hover:scale-105">
-        <Image
+      <div className="    ">
+        {/* <Image
           src="https://lh3.googleusercontent.com/d/1Px6edZckEg5s8SwTJZtmNvQ_4f_izd4t=s220?authuser=0"
           alt="Google Drive Image"
           width={140}
           height={140}
           layout="responsive"
-        />
-        {/* <img className="w-36 h-36 " src="https://lh3.googleusercontent.com/d/1Px6edZckEg5s8SwTJZtmNvQ_4f_izd4t=s220?authuser=0" alt="" /> */}
+        /> */}
+        <img className="w-40 h-40  rounded-full flex-wrap sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center  transition-all duration-500 hover:scale-105" src="https://lh3.googleusercontent.com/d/1Px6edZckEg5s8SwTJZtmNvQ_4f_izd4t=s220?authuser=0" alt="" />
       </div>
 
       {/* Small Circles with Orbit Animation */}
