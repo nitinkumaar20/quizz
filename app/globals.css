@@ -8,10 +8,15 @@
   --background: #ffffff;
   --foreground: #171717;
   /* --primary: #ee8f7b; */
-  --primary: #758ab8;
-  --secondary: #f0bd71;
+  /* --primary: #758ab8; */
+  --primary: #7c9df7;
+  /* --primary: #95a9de; */
+  /* --secondary: #6dee62; */
+  --secondary: #69ba82;
   /* --secondary: #474747; */
   --tertiary: #ffffff;
+  --fivth:#303a6f;
+  --fourth: #f3873c;
   --textColor: #171717;
 
 }
