@@ -3,7 +3,7 @@ import React from 'react'
 const MobileQz = () => {
   return (
     <div>
-      <div className="m-5 rounded-lg w-[90%]  bg-[--primary]">
+      <div className="m-5 rounded-lg w-[90%]  bg-[--primary] text-[--font-color]">
         <div className="m-5 flex gap-5">
           <div className="flex  justify-center items-center gap-1">
             <div className="w-3 h-3 bg-green-500"></div>
@@ -33,7 +33,7 @@ const MobileQz = () => {
 
           {/* Bottom Row */}
           <div className="flex justify-start items-center gap-2 w-full mt-[-.8rem] ">
-            <div className="w-3 h-3 bg-[--foreground]"></div>
+            <div className="w-3 h-3 bg-white"></div>
             <h1>Unseen</h1>
           </div>
         </div>

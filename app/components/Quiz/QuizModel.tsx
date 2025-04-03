@@ -29,7 +29,7 @@ const QuizStartModel = ({ setIsOpen }: QuizStartModalProps) => {
             Cancel
           </button>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+            className="bg-[--fivth] text-white px-4 py-2 rounded-lg"
             onClick={() => router.push("/quiz")}
           >
             Start Quiz

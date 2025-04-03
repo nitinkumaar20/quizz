@@ -12,7 +12,7 @@ const QuizBox = ({ title, questions, duration }: contentType) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className=" ">
-      <div className="  bg-slate-200 rounded-lg h-52">
+      <div className="  bg-slate-200 rounded-lg h-52 text-[--font-color]  ">
         <div className="bg-[--primary] rounded-b-lg  rounded-t-lg w-full h-[28%] flex justify-center items-center ">
           <img
             className="w-16 h-12"

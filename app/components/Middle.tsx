@@ -49,7 +49,7 @@ import QuizBox from "./Quiz/QuizBox";
 const Middle = () => {
   return (
     <div className=" py-10 ">
-      <div className="grid grid-cols-2 mx-4 gap-2 font-bold  border-b-2 pb-5 ">
+      <div className="grid grid-cols-2 mx-4 gap-2 font-bold  border-b-2 pb-5 text-[--font-color]">
         <select name="" id="" className="p-2 border rounded-md">
           <option value="">SSC</option>
           <option value="">Railways</option>
