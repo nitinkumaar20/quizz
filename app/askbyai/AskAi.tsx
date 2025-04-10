@@ -6,8 +6,7 @@ import axios from "axios";
 import Tesseract from "tesseract.js";
 
 const AIQuestionSolver = () => {
-  const webcamRef = useRef(null);
-  const [image, setImage] = useState<string | null>(null);
+  const webcamRef = useRef<Webcam | null>(null);
   const [questionText, setQuestionText] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -15,10 +14,11 @@ const AIQuestionSolver = () => {
   const toggleWebcam = () => setShowWebcam(!showWebcam);
 
   const capture = () => {
-    const imageSrc = (webcamRef.current as any).getScreenshot();
-    setImage(imageSrc);
-    processOCR(imageSrc);
-    setShowWebcam(false);
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      processOCR(imageSrc);
+      setShowWebcam(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +29,6 @@ const AIQuestionSolver = () => {
     reader.onloadend = () => {
       if (reader.result) {
         const base64 = reader.result.toString();
-        setImage(base64);
         processOCR(base64);
       }
     };
@@ -53,32 +52,39 @@ const AIQuestionSolver = () => {
   };
 
   const getAnswers = async (question: string) => {
-    if (!question.trim()) {
+    const cleanedQuestion = question.trim();
+    if (!cleanedQuestion) {
       alert("Please enter a question.");
       return;
     }
   
     setLoading(true);
     const prompt = `
-    You are an expert AI designed to help students prepare for government exams with time-saving techniques.
+    You are a highly intelligent AI tutor for Indian government exam aspirants.
     
-    Analyze the question below. Identify the subject (Math, Reasoning, English, GK, Hindi, Uttarakhand GK, Uttar Pradesh GK).
+    Your tasks:
+    1. Silently correct any spelling or grammar mistakes in the input.
+    2. If a word has multiple meanings, always prefer **Indian exam-related historical or academic context** (not pop culture or Pokémon, etc.).
+    3. Identify the subject based on the content.
     
-    - If it's **Math**, give  three fastest trick or method to solve it within 1 minute or max 2 minute.
-    - If it's **Reasoning**, give  three sharp trick to solve it within 30 seconds or maximum 1 min.
-    - If it's **theoretical** (English, GK, Hindi, etc.), give ONLY ONE factual answer in a single line.
+    Subjects include:
+    - Math (if calculations or numbers involved)
+    - Reasoning (logic or patterns)
+    - English, Hindi
+    - GK, General Studies (History, Polity, Science, Geography, Economics)
+    - Uttarakhand GK, UP GK
     
-Format:
-- Each answer must be numbered like: 1., 2., 3.
-- Each answer must appear on a new line.
-- Add a blank line between each answer.
-- Do NOT include subject name, explanation, or any extra text — just the direct answers.
+    Instructions:
+    - For Math or Reasoning: Give 3 easy short tricks (numbered 1., 2., 3.) to solve the question in 1 minute or maximum 2 minute.
+    - For theoretical questions: Give **only one short factual answer in one line**, without explanation or numbering.
+    - Do not include commentary, any subject name or other thing, context, or extra lines.
     
-    Question: "${question}"
+    Correct and answer the following question:
+    
+    "${cleanedQuestion}"
     `;
     
-    
-    
+
   
     try {
       const res = await axios.post(
@@ -91,7 +97,7 @@ Format:
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
             "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:3000", // update for prod
+            "HTTP-Referer": "http://localhost:3000",
             "X-Title": "GovtQuizApp",
           },
         }
@@ -99,12 +105,21 @@ Format:
   
       const text = res.data.choices[0].message.content;
       setAnswers([text.trim()]);
-    } catch (err: any) {
-      console.error("AI ERROR:", err.response?.data || err.message);
-      alert(
-        "AI response failed. " +
-          (err.response?.data?.error?.message || err.message || "")
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (axios.isAxiosError(err) && err.response) {
+          console.error("AI ERROR:", err.response.data);
+        } else {
+          console.error("AI ERROR:", err.message);
+        }
+        alert(
+          "AI response failed. " +
+            ((axios.isAxiosError(err) && err.response?.data?.error?.message) || err.message || "")
+        );
+      } else {
+        console.error("Unexpected error:", err);
+        alert("An unexpected error occurred.");
+      }
     }
   
     setLoading(false);
@@ -114,16 +129,16 @@ Format:
   return (
     <div className="p-4 space-y-6 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold text-center">
-        📘 Ask AI – Govt Exam Helper
+      Ask with AI 
       </h2>
 
       {/* Controls */}
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
         {/* Upload or Camera */}
         <div className="space-y-3 w-full">
           <button
             onClick={toggleWebcam}
-            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+            className="bg-[--primary] text-white px-4 py-2 rounded w-full"
           >
             {showWebcam ? "Close Camera" : "📷 Open Camera"}
           </button>
@@ -133,19 +148,30 @@ Format:
               <Webcam ref={webcamRef} screenshotFormat="image/jpeg" />
               <button
                 onClick={capture}
-                className="bg-indigo-600 text-white p-2 rounded w-full"
+                className="bg-[--primary] text-white p-2 rounded w-full"
               >
-                ✅ Capture Question
+                ✅ Capture Question 
               </button>
             </div>
           )}
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="w-full"
-          />
+<div className="w-full">
+  <label className="block w-full ">
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleImageUpload}
+      className="block w-full text-sm text-gray-500
+                 file:mr-4 file:py-2 file:px-4
+                 file:rounded file:border-0
+                 file:text-sm file:font-semibold
+                 file:bg-blue-50 file:text-blue-700
+                 hover:file:bg-blue-100
+               "
+    />
+  </label>
+</div>
+
         </div>
 
         {/* Manual Question */}
@@ -159,7 +185,7 @@ Format:
           />
           <button
             onClick={() => getAnswers(questionText)}
-            className="bg-green-600 text-white px-4 py-2 rounded w-full"
+            className="bg-[--secondary] text-white px-4 py-2 rounded w-full"
           >
             ✨ Get Answers
           </button>
@@ -171,15 +197,13 @@ Format:
 
       {/* Results */}
       {answers.length > 0 && (
-  <div className="mt-6 space-y-2">
-    <h3 className="text-xl font-semibold">✅ Easy Solution:</h3>
-    <div className="bg-gray-100 border-l-4 border-green-500 p-3 rounded whitespace-pre-line">
-      {answers[0]}
-    </div>
-  </div>
-)}
-
-
+        <div className="mt-6 space-y-2">
+          {/* <h3 className="text-xl font-semibold">✅ Easy Solution:</h3> */}
+          <div className="bg-gray-100 border-l-4 border-[--secondary] p-3 rounded whitespace-pre-line">
+            {answers[0]}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

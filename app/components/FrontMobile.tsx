@@ -7,7 +7,7 @@ const FrontMobile = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
   return (
-    <div className="bg-[--primary] border-t  w-full rounded-b-3xl py-5 ">
+    <div className="bg-[--primary]  border-t  w-full rounded-b-3xl py-5 ">
       <div className="position absolute top-5 right-5 z-10">
         {/* red dot */}
         <div className="w-1 h-1 sm:w-1 sm:h-1 rounded-full position absolute top-1 right-1 z-20 bg-red-500"></div>

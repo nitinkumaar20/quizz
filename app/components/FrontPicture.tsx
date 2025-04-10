@@ -16,7 +16,7 @@ const AnimatedCircles = () => {
         {/* https://drive.google.com/file/d/1YMUF2h3GUcAq9LiPzCg2gnRfowhblirn/view?usp=sharing  2*/}
         {/* https://drive.google.com/file/d/1tb7IFKCV4koythfIr1iIbJhBVQ2qcK7B/view?usp=sharing  3 */}
         <img
-          className="w-40 h-40  flex-wrap sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center  transition-all duration-500 hover:scale-105"
+          className="w-40 h-40 rounded-full  flex-wrap sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center  transition-all duration-500 hover:scale-105"
           src="https://lh3.googleusercontent.com/d/1tb7IFKCV4koythfIr1iIbJhBVQ2qcK7B=s220?authuser=0"
           alt=""
         />

@@ -37,20 +37,20 @@ body {
 
 
 
-.frontImage {
+/* .frontImage {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
-}
-
+} */
+/* 
 .frontImage {
   background-image: url("https://cdn.pixabay.com/photo/2024/01/19/09/45/ai-generated-8518509_1280.png");
-  background-size: cover; /* Ensures the image covers the div */
-  background-position: center; /* Centers the image */
-  background-repeat: no-repeat; /* Prevents tiling */
+  background-size: cover;
+  background-position: center; 
+  background-repeat: no-repeat; 
   width: 10rem;
   height: 10rem;
-}
+} */
 
 @keyframes orbit1 {
   0% {
