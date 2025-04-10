@@ -4,21 +4,24 @@ import { useRouter } from "next/navigation";
 
 interface QuizStartModalProps {
   setIsOpen: (open: boolean) => void;
+  topic : string;
+   time : number;
+   question : number;
 }
-const QuizStartModel = ({ setIsOpen }: QuizStartModalProps) => {
+const QuizStartModel = ({ setIsOpen, topic, time, question }: QuizStartModalProps) => {
   const router = useRouter();
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-xl shadow-lg w-96 text-center">
         <h2 className="text-xl font-semibold mb-4">Quiz Details</h2>
         <p>
-          <strong>Topic:</strong> General Knowledge
+          <strong>Topic:</strong> {topic}
         </p>
         <p>
-          <strong>Time:</strong> 10 minutes
+          <strong>Time:</strong> {time} minutes
         </p>
         <p>
-          <strong>Questions:</strong> 20
+          <strong>Questions:</strong> {question}
         </p>
 
         <div className="mt-4 flex justify-around">

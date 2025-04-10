@@ -1,10 +1,10 @@
 import React from 'react'
-import AskAi from './AskAi'
+import AIQuestionSolver from './AskAi'
 
 const page = () => {
   return (
     <div>
-    <AskAi/>
+    <AIQuestionSolver/>
     </div>
   )
 }

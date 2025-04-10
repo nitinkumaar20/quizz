@@ -95,7 +95,7 @@ const QuizBox = ({ title, questions, duration }: contentType) => {
           </button>
 
           {/* Show Modal if isOpen is true */}
-          {isOpen && <QuizStartModel setIsOpen={setIsOpen} />}
+          {isOpen && <QuizStartModel setIsOpen={setIsOpen} topic={title} question={questions} time={duration} />}
 
           {/* {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

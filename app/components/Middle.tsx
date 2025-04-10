@@ -80,11 +80,11 @@ const Middle = () => {
           questions={20}
           duration={20}
         />
-        <QuizBox title="mugal empire" questions={20} duration={20} />
-        <QuizBox title="mugal empire" questions={20} duration={20} />
-        <QuizBox title="mugal empire" questions={20} duration={20} />
-        <QuizBox title="mugal empire" questions={20} duration={20} />
-        <QuizBox title="mugal empire" questions={20} duration={20} />
+        <QuizBox title="mugal empire 3" questions={20} duration={20} />
+        <QuizBox title="mugal empire 2" questions={50} duration={10} />
+        <QuizBox title="mugal empire 5" questions={10} duration={20} />
+        <QuizBox title="mugal empire 6" questions={60} duration={50} />
+        <QuizBox title="mugal empire 1" questions={20} duration={20} />
       </div>
     </div>
   );
