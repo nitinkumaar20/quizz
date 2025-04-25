@@ -288,29 +288,7 @@ export default function SubjectManager() {
         onSubmit={handleSubmit}
         className="space-y-3 max-w-md mx-10 flex flex-col justify-start items-start"
       >
-        <input
-          type="text"
-          name="subjectName"
-          placeholder="Subject Name"
-          value={formData.subjectName}
-          onChange={handleChange}
-          required
-          className="w-full border p-2 rounded"
-        />
-        <select
-          value={selectedExam}
-          onChange={(e) => setSelectedExam(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Exam</option>
-          {[...new Set(examBoards.map((eb) => eb.examName))].map((exam, i) => (
-            <option key={i} value={exam}>
-              {exam.toUpperCase()}
-            </option>
-          ))}
-        </select>
-
+        
         <select
           value={selectedBoard}
           onChange={(e) => setSelectedBoard(e.target.value)}
@@ -326,6 +304,30 @@ export default function SubjectManager() {
             )
           )}
         </select>
+
+        <select
+          value={selectedExam}
+          onChange={(e) => setSelectedExam(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Exam</option>
+          {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase())).map((exam, i) => (
+            <option key={i} value={exam.examName}>
+              {exam.examName.toUpperCase()}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          name="subjectName"
+          placeholder="Subject Name"
+          value={formData.subjectName}
+          onChange={handleChange}
+          required
+          className="w-full border p-2 rounded"
+        />
 
         <select
           name="accessType"
