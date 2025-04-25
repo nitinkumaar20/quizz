@@ -3,7 +3,7 @@ import Round from './round'
 
 const RoundPage = () => {
   return (
-    <div>
+    <div style={{overflow: "auto", width: "100%"}}>
       <Round/>
     </div>
   )
