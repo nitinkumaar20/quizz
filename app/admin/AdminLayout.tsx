@@ -4,6 +4,7 @@ import { useState } from "react";
 import Boardpage from "./board/page";
 import SubjectPage from "./subjects/page";
 import RoundPage from "./round/page";
+import TopicPage from "./topic/page";
 
 type page = {
   params: { page: string };
@@ -39,10 +40,16 @@ const renderPage = () => {
       return (
         <SubjectPage/>
       );
+      case "topic":
+        return (
+          <TopicPage />
+        );
       case "round":
       return (
         <RoundPage />
       );
+
+
     default:
       return <p>Page not found</p>;
   }
@@ -79,6 +86,12 @@ const renderPage = () => {
             onClick={() => setPage({ params: { page: "subject" } })}
           >
             Add Subjects
+          </button>
+          <button
+            className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
+            onClick={() => setPage({ params: { page: "topic" } })}
+          >
+            Add Topic or Chapters
           </button>
           <button
             className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"

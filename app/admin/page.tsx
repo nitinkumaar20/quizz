@@ -1,6 +1,5 @@
 import React from "react";
 import AdminLayout from "./AdminLayout";
-import Board from "./Board";
 
 const page = () => {
   return (

@@ -1,10 +1,10 @@
 import React from 'react'
-import Round from './round'
+import RoundManager from './round'
 
 const RoundPage = () => {
   return (
-    <div>
-      <Round/>
+    <div className='p-5 h-screen overflow-y-auto  bg-gray-50 w-full'>
+      <RoundManager/>
     </div>
   )
 }
