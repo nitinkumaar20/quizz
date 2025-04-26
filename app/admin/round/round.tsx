@@ -1,58 +1,66 @@
 "use client";
+
+import React from 'react'
+import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
 
-interface Round {
+interface IRound {
   id?: string;
   roundName: string;
   sectionName: string;
-  roundType: "MAIN" | "PRE" | "OTHER";
   examId: number | null;
   ownerId: number | null;
-  accessType: "PUBLIC" | "PRIVATE";
   active: boolean;
+  roundType: "PRELIMS" | "MAIN";
+  accessType: "PUBLIC" | "PRIVATE";
 }
 
-interface ExamBoard {
-  id: number;
-  examName: string;
-  examBoardShortName: string;
-}
-
-export default function RoundManager() {
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [formData, setFormData] = useState<Round>({
+export default function Round() {
+  const [rounds, setRounds] = useState<IRound[]>([]);
+  const [formData, setFormData] = useState<IRound>({
     roundName: "",
     sectionName: "",
-    roundType: "MAIN",
     examId: null,
     ownerId: null,
-    accessType: "PUBLIC",
-    active: true,
+    active: false,
+    roundType: "PRELIMS",
+    accessType: "PUBLIC"
   });
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | undefined>(undefined);
+  interface ExamBoard {
+    id: number;
+    examName: string;
+    examBoardShortName: string;
+  }
 
   const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [selectedBoard, setSelectedBoard] = useState<string>("");
+  const [editExamName, setEditExamName] = useState<string>("");
+  const [editBoardShortName, setEditBoardShortName] = useState<string>("");
+
+  // Fetch subjects
+  const fetchRounds = async () => {
+    try {
+      const res = await axios.get("http://localhost:1100/api/round/");
+      setRounds(res.data.data);
+    } catch (error) {
+      console.error("Error fetching rounds:", error);
+    }
+  };
 
   useEffect(() => {
     fetchRounds();
     fetchExamBoards();
   }, []);
 
-  const fetchRounds = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/round");
-      setRounds(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch rounds", err);
-    }
-  };
-
   const fetchExamBoards = async () => {
     try {
       const res = await axios.get("http://localhost:1100/api/examboard");
+      console.log(res, "res");
       setExamBoards(res.data.data);
     } catch (err) {
       console.error("Failed to fetch exam boards", err);
@@ -67,7 +75,14 @@ export default function RoundManager() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : ["examId", "ownerId"].includes(name)
+            ? value === ""
+              ? null // Store null for empty input
+              : Number(value) // Convert to number if not empty
+            : value,
     }));
   };
 
@@ -76,8 +91,7 @@ export default function RoundManager() {
 
     const matchedExamBoard = examBoards.find(
       (eb) =>
-        eb.examName === selectedExam &&
-        eb.examBoardShortName === selectedBoard
+        eb.examName === selectedExam && eb.examBoardShortName === selectedBoard
     );
 
     if (!matchedExamBoard) {
@@ -88,80 +102,211 @@ export default function RoundManager() {
     const submitData = {
       ...formData,
       examId: matchedExamBoard.id,
-      ownerId: 1,
+      ownerId: 1, // Replace with actual user ID if needed
     };
 
     try {
-      await axios.post("http://localhost:1100/api/round", submitData);
+      await axios.post("http://localhost:1100/api/round/", submitData);
       Swal.fire("Success", "Round created successfully", "success");
       setFormData({
         roundName: "",
         sectionName: "",
-        roundType: "MAIN",
         examId: null,
         ownerId: null,
-        accessType: "PUBLIC",
-        active: true,
+        active: false,
+        roundType: "PRELIMS",
+        accessType: "PUBLIC"
       });
       setSelectedExam("");
       setSelectedBoard("");
       fetchRounds();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        console.error("Error submitting round:", err.response?.data || err.message);
+        console.error("Error submitting subject:", err.response?.data || err.message);
       } else {
         console.error("Unexpected error:", err);
       }
-      Swal.fire("Error", "Failed to submit round", "error");
+      Swal.fire("Error", "Failed to submit subject", "error");
+    }
+  };
+
+  const handleEdit = (id: string | undefined) => {
+    const subjectToEdit = rounds.find((s) => s.id === id);
+    if (subjectToEdit) {
+      setFormData(subjectToEdit);
+      setEditId(id);
+
+      const matchingBoard = examBoards.find(
+        (eb) => eb.id === subjectToEdit.examId
+      );
+      setEditExamName(matchingBoard?.examName || "");
+      setEditBoardShortName(matchingBoard?.examBoardShortName || "");
+
+      setIsEditModalOpen(true);
+    }
+  };
+  const handleSaveEdit = async () => {
+    if (!editId) return;
+
+    const matchedExamBoard = examBoards.find(
+      (eb) =>
+        eb.examName === editExamName &&
+        eb.examBoardShortName === editBoardShortName
+    );
+
+    if (!matchedExamBoard) {
+      Swal.fire("Error", "Matching Exam and Board not found", "error");
+      return;
+    }
+
+    const updateData = {
+      roundName: formData.roundName,
+      sectionName: formData.sectionName,
+      active: formData.active,
+      examId: matchedExamBoard.id,
+      ownerId: 1, // TEMP: Hardcoded user ID (adjust based on your logic)
+      roundType: formData.roundType
+    };
+
+    console.log("🚀 Update Payload:", updateData);
+
+    try {
+      await axios.put(
+        `http://localhost:1100/api/subject/${editId}`,
+        updateData
+      );
+      Swal.fire("Updated!", "Subject updated successfully.", "success");
+
+      setIsEditModalOpen(false);
+      setEditId(undefined);
+      setFormData({
+        roundName: "",
+        sectionName: "",
+        examId: null,
+        ownerId: null,
+        active: false,
+        roundType: "PRELIMS",
+        accessType: "PUBLIC"
+      });
+      setEditExamName("");
+      setEditBoardShortName("");
+      fetchRounds();
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("PUT error:", error.response?.data || error.message);
+        Swal.fire(
+          "Error",
+          error.response?.data?.message?.[0]?.message ||
+          "Failed to update subject",
+          "error"
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        Swal.fire("Error", "An unexpected error occurred", "error");
+      }
     }
   };
 
   return (
-    <div className="mx-10">
-      <h1 className="text-2xl font-bold mb-4">Add New Round</h1>
-      <form onSubmit={handleSubmit} className="space-y-3 max-w-md">
-        <input
-          type="text"
-          name="roundName"
-          placeholder="Round Name"
-          value={formData.roundName}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          name="sectionName"
-          placeholder="Section Name"
-          value={formData.sectionName}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <select
-          name="roundType"
-          value={formData.roundType}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-        >
-          <option value="MAIN">MAIN</option>
-          <option value="PRE">PRE</option>
-          <option value="OTHER">OTHER</option>
-        </select>
+    <div>
+      <h1 className="text-2xl font-bold mb-4 mx-10">Add New Round</h1>
 
-        <select
-          value={selectedExam}
-          onChange={(e) => setSelectedExam(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Exam</option>
-          {[...new Set(examBoards.map((eb) => eb.examName))].map((exam, i) => (
-            <option key={i} value={exam}>
-              {exam.toUpperCase()}
-            </option>
-          ))}
-        </select>
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Edit Round</h2>
+            <div className="space-y-3">
+              <input
+                type="text"
+                name="roundName"
+                placeholder="Round Name"
+                value={formData.roundName}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="text"
+                name="sectionName"
+                placeholder="Section Name"
+                value={formData.sectionName}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+              />
+              <select
+                value={editExamName}
+                onChange={(e) => setEditExamName(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="">Select Exam</option>
+                {[...new Set(examBoards.map((eb) => eb.examName))].map(
+                  (exam, i) => (
+                    <option key={i} value={exam.trim()}>
+                      {exam.toUpperCase()}
+                    </option>
+                  )
+                )}
+              </select>
+
+              <select
+                value={editBoardShortName}
+                onChange={(e) => setEditBoardShortName(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="">Select Board</option>
+                {[
+                  ...new Set(examBoards.map((eb) => eb.examBoardShortName)),
+                ].map((board, i) => (
+                  <option key={i} value={board}>
+                    {board.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                name="roundType"
+                value={formData.roundType}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+              >
+                <option value="MAINs">MAINS</option>
+                <option value="PRELIMS">PRELIMS</option>
+              </select>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name="active"
+                  checked={formData.active}
+                  onChange={(e) =>
+                    setFormData({ ...formData, active: e.target.checked })
+                  }
+                />
+                <span>Is Active?</span>
+              </label>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="bg-gray-300 px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-3 max-w-md mx-10 flex flex-col justify-start items-start"
+      >
 
         <select
           value={selectedBoard}
@@ -180,13 +325,56 @@ export default function RoundManager() {
         </select>
 
         <select
+          value={selectedExam}
+          onChange={(e) => setSelectedExam(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Exam</option>
+          {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase())).map((exam, i) => (
+            <option key={i} value={exam.examName}>
+              {exam.examName.toUpperCase()}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          name="roundName"
+          placeholder="Round Name"
+          value={formData.roundName}
+          onChange={handleChange}
+          required
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          name="sectionName"
+          placeholder="Section Name"
+          value={formData.sectionName}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+
+        <select
+          name="roundType"
+          value={formData.roundType}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        >
+          <option value="MAINS">MAINS</option>
+          <option value="PRELIMS">PRELIMS</option>
+        </select>
+
+        <select
           name="accessType"
           value={formData.accessType}
           onChange={handleChange}
           className="w-full border p-2 rounded"
         >
-          <option value="PUBLIC">PUBLIC</option>
           <option value="PRIVATE">PRIVATE</option>
+          <option value="PUBLIC">PUBLIC</option>
         </select>
 
         <label className="flex items-center space-x-2">
@@ -194,58 +382,74 @@ export default function RoundManager() {
             type="checkbox"
             name="active"
             checked={formData.active}
-            onChange={handleChange}
+            onChange={(e) =>
+              setFormData({ ...formData, active: e.target.checked })
+            }
           />
           <span>Is Active?</span>
         </label>
-
         <button
           type="submit"
-          className="bg-[--secondary] text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Add Round
+          Add Subject
         </button>
       </form>
 
-      {/* Table of Rounds */}
-      <div className="mt-8">
+      {/* Table */}
+      <div className="mt-8 mx-10">
         <h2 className="text-xl font-semibold mb-2">All Rounds</h2>
         {rounds.length > 0 ? (
           <div className="w-full border rounded bg-white">
             <table className="w-full text-left">
-              <thead className="bg-gray-100">
+              <thead className="sticky top-0 bg-gray-100 z-10">
                 <tr>
                   <th className="p-2 border">Round</th>
                   <th className="p-2 border">Section</th>
-                  <th className="p-2 border">Type</th>
-                  <th className="p-2 border">Exam</th>
                   <th className="p-2 border">Board</th>
-                  <th className="p-2 border">Access</th>
+
+                  <th className="p-2 border">Type</th>
                   <th className="p-2 border">Active</th>
+                  <th className="p-2 border">Edit</th>
                 </tr>
               </thead>
               <tbody>
-                {rounds.map((round, i) => {
-                  const eb = examBoards.find((e) => e.id === round.examId);
-                  return (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="p-2 border">{round.roundName}</td>
-                      <td className="p-2 border">{round.sectionName}</td>
-                      <td className="p-2 border">{round.roundType}</td>
-                      <td className="p-2 border">{eb?.examName || "N/A"}</td>
-                      <td className="p-2 border">
-                        {eb?.examBoardShortName || "N/A"}
-                      </td>
-                      <td className="p-2 border">{round.accessType}</td>
-                      <td className="p-2 border">{round.active ? "Yes" : "No"}</td>
-                    </tr>
-                  );
-                })}
+                {rounds.map((e, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="p-2 border">{e.roundName}</td>
+                    <td className="p-2 border">
+                    {e.sectionName}
+                    </td>
+                    <td className="p-2 border">
+                      {"N/A"}
+                    </td>
+
+                    <td className="p-2 border">{e.roundType}</td>
+                    <td className="p-2 border">{e.active ? "Yes" : "No"}</td>
+                    <td className="p-2 border">
+                      <svg
+                        className="w-6 h-6 text-black hover:text-red-600 cursor-pointer"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        onClick={() => handleEdit(e.id)}
+                      >
+                        <path
+                          d="M18.945 9.188l-4-4m4 4l-4.999 4.998a6.22 6.22 0 01-2.376 1.337c-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626a6.22 6.22 0 011.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5S3.5 18.5 3.5 12 5.5 3.5 12 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p>No rounds found.</p>
+          <p>No subjects found.</p>
         )}
       </div>
     </div>
