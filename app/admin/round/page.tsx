@@ -4,7 +4,7 @@ import RoundManager from './round'
 const RoundPage = () => {
   return (
     <div style={{overflow: "auto", width: "100%"}}>
-      <Round/>
+      <RoundManager/>
     </div>
   )
 }
