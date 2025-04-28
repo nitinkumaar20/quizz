@@ -5,6 +5,7 @@ import Boardpage from "./board/page";
 import SubjectPage from "./subjects/page";
 import RoundPage from "./round/page";
 import TopicPage from "./topic/page";
+import QuestionPage from "./question/page";
 
 type page = {
   params: { page: string };
@@ -49,6 +50,10 @@ const renderPage = () => {
         <RoundPage />
       );
 
+      case "question":
+        return (
+          <QuestionPage />
+        );
 
     default:
       return <p>Page not found</p>;
@@ -98,6 +103,12 @@ const renderPage = () => {
             onClick={() => setPage({ params: { page: "round" } })}
           >
             Add Rounds
+          </button>
+          <button
+            className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
+            onClick={() => setPage({ params: { page: "question" } })}
+          >
+            Add Questions
           </button>
 
           <button className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded">

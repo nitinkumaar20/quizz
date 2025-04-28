@@ -214,20 +214,7 @@ export default function SubjectManager() {
                 onChange={handleChange}
                 className="w-full border p-2 rounded"
               />
-              <select
-                value={editExamName}
-                onChange={(e) => setEditExamName(e.target.value)}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Exam</option>
-                {[...new Set(examBoards.map((eb) => eb.examName))].map(
-                  (exam, i) => (
-                    <option key={i} value={exam.trim()}>
-                      {exam.toUpperCase()}
-                    </option>
-                  )
-                )}
-              </select>
+         
 
               <select
                 value={editBoardShortName}
@@ -242,6 +229,21 @@ export default function SubjectManager() {
                     {board.toUpperCase()}
                   </option>
                 ))}
+              </select>
+
+              <select
+                value={editExamName}
+                onChange={(e) => setEditExamName(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="">Select Exam</option>
+                {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === editBoardShortName.toLowerCase())).map(
+                  (exam, i) => (
+                    <option key={i} value={exam.examName}>
+                      {exam.examName.toUpperCase()}
+                    </option>
+                  )
+                )}
               </select>
 
               <select

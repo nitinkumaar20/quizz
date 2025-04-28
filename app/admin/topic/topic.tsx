@@ -17,13 +17,12 @@ interface Subject {
 }
 
 interface ExamBoard {
-    id: number;
-    examId: number; // 👈 add this line
-    examBoardShortName: string;
-    examName: string;
-    // you can include others if needed
-  }
-  
+  id: number;
+  examId: number; // 👈 add this line
+  examBoardShortName: string;
+  examName: string;
+  // you can include others if needed
+}
 
 export default function TopicManager() {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -58,7 +57,6 @@ export default function TopicManager() {
       const res = await axios.get("http://localhost:1100/api/subject");
       setSubjects(res.data.data);
       console.log("Subjects fetched:", res.data.data);
-      
     } catch (err) {
       console.error("Failed to fetch subjects", err);
     }
@@ -106,7 +104,10 @@ export default function TopicManager() {
       fetchTopics();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        console.error("Error submitting topic:", err.response?.data || err.message);
+        console.error(
+          "Error submitting topic:",
+          err.response?.data || err.message
+        );
       } else {
         console.error("Unexpected error:", err);
       }
@@ -115,14 +116,13 @@ export default function TopicManager() {
   };
 
   // Filter subjects based on selected exam and board
-  const filteredSubjects = subjects.filter((subject) => {
-    const examBoard = examBoards.find((eb) => eb.id === subject.examId);
-    return (
-      examBoard?.examName === selectedExam &&
-      examBoard?.examBoardShortName === selectedBoard
-    );
-  });
-
+  // const filteredSubjects = subjects.filter((subject) => {
+  //   const examBoard = examBoards.find((eb) => eb.id === subject.examId);
+  //   return (
+  //     examBoard?.examName === selectedExam &&
+  //     examBoard?.examBoardShortName === selectedBoard
+  //   );
+  // });
 
   return (
     <div className="mx-10">
@@ -139,20 +139,6 @@ export default function TopicManager() {
         />
 
         <select
-          value={selectedExam}
-          onChange={(e) => setSelectedExam(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Exam</option>
-          {[...new Set(examBoards.map((eb) => eb.examName))].map((exam, i) => (
-            <option key={i} value={exam}>
-              {exam.toUpperCase()}
-            </option>
-          ))}
-        </select>
-
-        <select
           value={selectedBoard}
           onChange={(e) => setSelectedBoard(e.target.value)}
           className="w-full border p-2 rounded"
@@ -167,27 +153,40 @@ export default function TopicManager() {
             )
           )}
         </select>
+
         <select
-  value={selectedSubject || ""}
-  onChange={(e) => setSelectedSubject(Number(e.target.value))}
-  className="w-full border p-2 rounded"
-  required
->
-  <option value="">Select Subject</option>
-  {subjects.map((subject) => {
+          value={selectedExam}
+          onChange={(e) => setSelectedExam(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Exam</option>
+          {examBoards.filter((eb)=> eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase()).map((exam, i) => (
+            <option key={i} value={exam.examName}>
+              {exam.examName.toUpperCase()}
+            </option>
+          ))}
+        </select>
 
-    
-    const label = `${subject.subjectName.toUpperCase()} ${subject.examId}   `;
-    
-    return (
-      <option key={subject.id} value={subject.id}>
-        {label}
-      </option>
-    );
-  })}
-</select>
+        <select
+          value={selectedSubject || ""}
+          onChange={(e) => setSelectedSubject(Number(e.target.value))}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Subject</option>
+          {subjects.map((subject) => {
+            const label = subject.subjectName.toUpperCase();
+            const examBoard = examBoards.find((eb) => eb.id === subject.examId);
+            if (examBoard?.examName.toLowerCase() !== selectedExam.toLowerCase()) return null; // Filter subjects based on selected exam
 
-
+            return (
+              <option key={subject.id} value={subject.id}>
+                {label}
+              </option>
+            );
+          })}
+        </select>
 
         <label className="flex items-center space-x-2">
           <input
@@ -217,27 +216,55 @@ export default function TopicManager() {
                 <tr>
                   <th className="p-2 border">Topic</th>
                   <th className="p-2 border">Subject</th>
-                  <th className="p-2 border">Exam</th>
                   <th className="p-2 border">Board</th>
+                  <th className="p-2 border">Exam</th>
                   <th className="p-2 border">Active</th>
+                  <th className="p-2 border">Edit</th>
                 </tr>
               </thead>
               <tbody>
                 {topics.map((topic, i) => {
-                  const subject = subjects.find((s) => s.id === topic.subjectId);
+                  const subject = subjects.find(
+                    (s) => s.id === topic.subjectId
+                  );
+
                   const examBoard = examBoards.find(
                     (eb) => eb.id === subject?.examId
                   );
 
                   return (
                     <tr key={i} className="hover:bg-gray-50">
-                      <td className="p-2 border">{topic.topicName}</td>
-                      <td className="p-2 border">{subject?.subjectName || "N/A"}</td>
-                      <td className="p-2 border">{examBoard?.examName || "N/A"}</td>
+                      <td className="p-2 border">{topic.topicName.toUpperCase().toUpperCase()}</td>
                       <td className="p-2 border">
-                        {examBoard?.examBoardShortName || "N/A"}
+                        {subject?.subjectName.toUpperCase() || "N/A"}
                       </td>
-                      <td className="p-2 border">{topic.active ? "Yes" : "No"}</td>
+                      <td className="p-2 border">
+                        {examBoard?.examBoardShortName.toUpperCase() || "N/A"}
+                      </td>
+                      <td className="p-2 border">
+                        {examBoard?.examName.toUpperCase() || "N/A"}
+                      </td>
+                      <td className="p-2 border">
+                        {topic.active ? "Yes" : "No"}
+                      </td>
+
+                      <td className="p-2 border">
+                      <svg
+                        className="w-6 h-6 text-black hover:text-red-600 cursor-pointer"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        // onClick={() => handleEdit(e.id)}
+                      >
+                        <path
+                          d="M18.945 9.188l-4-4m4 4l-4.999 4.998a6.22 6.22 0 01-2.376 1.337c-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626a6.22 6.22 0 011.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5S3.5 18.5 3.5 12 5.5 3.5 12 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </td>
                     </tr>
                   );
                 })}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react'
+import React from "react";
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -25,7 +25,7 @@ export default function Round() {
     ownerId: null,
     active: false,
     roundType: "PRELIMS",
-    accessType: "PUBLIC"
+    accessType: "PUBLIC",
   });
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -79,10 +79,10 @@ export default function Round() {
         type === "checkbox"
           ? checked
           : ["examId", "ownerId"].includes(name)
-            ? value === ""
-              ? null // Store null for empty input
-              : Number(value) // Convert to number if not empty
-            : value,
+          ? value === ""
+            ? null // Store null for empty input
+            : Number(value) // Convert to number if not empty
+          : value,
     }));
   };
 
@@ -100,10 +100,15 @@ export default function Round() {
     }
 
     const submitData = {
-      ...formData,
+      roundName: formData.roundName,
+      sectionName: formData.sectionName,
+      active: formData.active,
+      roundType: formData.roundType,
+      accessType: formData.accessType,
       examId: matchedExamBoard.id,
       ownerId: 1, // Replace with actual user ID if needed
     };
+    console.log(submitData, "submitData");
 
     try {
       await axios.post("http://localhost:1100/api/round/", submitData);
@@ -115,14 +120,17 @@ export default function Round() {
         ownerId: null,
         active: false,
         roundType: "PRELIMS",
-        accessType: "PUBLIC"
+        accessType: "PUBLIC",
       });
       setSelectedExam("");
       setSelectedBoard("");
       fetchRounds();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        console.error("Error submitting subject:", err.response?.data || err.message);
+        console.error(
+          "Error submitting subject:",
+          err.response?.data || err.message
+        );
       } else {
         console.error("Unexpected error:", err);
       }
@@ -164,18 +172,18 @@ export default function Round() {
       sectionName: formData.sectionName,
       active: formData.active,
       examId: matchedExamBoard.id,
-      ownerId: 1, // TEMP: Hardcoded user ID (adjust based on your logic)
-      roundType: formData.roundType
+      ownerId: 1,
+      roundType: formData.roundType,
+      accessType: formData.accessType,
     };
-
-    console.log("🚀 Update Payload:", updateData);
+    console.log(updateData, "updateData");
 
     try {
       await axios.put(
-        `http://localhost:1100/api/subject/${editId}`,
+        `http://localhost:1100/api/round/${editId}`, // corrected URL
         updateData
       );
-      Swal.fire("Updated!", "Subject updated successfully.", "success");
+      Swal.fire("Updated!", "Round updated successfully.", "success");
 
       setIsEditModalOpen(false);
       setEditId(undefined);
@@ -186,7 +194,7 @@ export default function Round() {
         ownerId: null,
         active: false,
         roundType: "PRELIMS",
-        accessType: "PUBLIC"
+        accessType: "PUBLIC",
       });
       setEditExamName("");
       setEditBoardShortName("");
@@ -197,7 +205,7 @@ export default function Round() {
         Swal.fire(
           "Error",
           error.response?.data?.message?.[0]?.message ||
-          "Failed to update subject",
+            "Failed to update round",
           "error"
         );
       } else {
@@ -208,7 +216,7 @@ export default function Round() {
   };
 
   return (
-    <div>
+    <div className="overflow-auto w-full my-5">
       <h1 className="text-2xl font-bold mb-4 mx-10">Add New Round</h1>
 
       {/* Edit Modal */}
@@ -233,20 +241,6 @@ export default function Round() {
                 onChange={handleChange}
                 className="w-full border p-2 rounded"
               />
-              <select
-                value={editExamName}
-                onChange={(e) => setEditExamName(e.target.value)}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Exam</option>
-                {[...new Set(examBoards.map((eb) => eb.examName))].map(
-                  (exam, i) => (
-                    <option key={i} value={exam.trim()}>
-                      {exam.toUpperCase()}
-                    </option>
-                  )
-                )}
-              </select>
 
               <select
                 value={editBoardShortName}
@@ -264,12 +258,31 @@ export default function Round() {
               </select>
 
               <select
+                value={editExamName}
+                onChange={(e) => setEditExamName(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="">Select Exam</option>
+                {examBoards
+                  .filter(
+                    (eb) =>
+                      eb.examBoardShortName.toLowerCase() ===
+                      editBoardShortName.toLowerCase()
+                  )
+                  .map((exam, i) => (
+                    <option key={i} value={exam.examName}>
+                      {exam.examName.toUpperCase()}
+                    </option>
+                  ))}
+              </select>
+
+              <select
                 name="roundType"
                 value={formData.roundType}
                 onChange={handleChange}
                 className="w-full border p-2 rounded"
               >
-                <option value="MAINs">MAINS</option>
+                <option value="MAIN">MAIN</option>
                 <option value="PRELIMS">PRELIMS</option>
               </select>
               <label className="flex items-center space-x-2">
@@ -307,8 +320,27 @@ export default function Round() {
         onSubmit={handleSubmit}
         className="space-y-3 max-w-md mx-10 flex flex-col justify-start items-start"
       >
+    
 
-        <select
+        <input
+          type="text"
+          name="roundName"
+          placeholder="Round Name"
+          value={formData.roundName}
+          onChange={handleChange}
+          required
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          name="sectionName"
+          placeholder="Section Name"
+          value={formData.sectionName}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+            <select
           value={selectedBoard}
           onChange={(e) => setSelectedBoard(e.target.value)}
           className="w-full border p-2 rounded"
@@ -331,31 +363,18 @@ export default function Round() {
           required
         >
           <option value="">Select Exam</option>
-          {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase())).map((exam, i) => (
-            <option key={i} value={exam.examName}>
-              {exam.examName.toUpperCase()}
-            </option>
-          ))}
+          {examBoards
+            .filter(
+              (eb) =>
+                eb.examBoardShortName.toLowerCase() ===
+                selectedBoard.toLowerCase()
+            )
+            .map((exam, i) => (
+              <option key={i} value={exam.examName}>
+                {exam.examName.toUpperCase()}
+              </option>
+            ))}
         </select>
-
-        <input
-          type="text"
-          name="roundName"
-          placeholder="Round Name"
-          value={formData.roundName}
-          onChange={handleChange}
-          required
-          className="w-full border p-2 rounded"
-        />
-
-        <input
-          type="text"
-          name="sectionName"
-          placeholder="Section Name"
-          value={formData.sectionName}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-        />
 
         <select
           name="roundType"
@@ -363,7 +382,7 @@ export default function Round() {
           onChange={handleChange}
           className="w-full border p-2 rounded"
         >
-          <option value="MAINS">MAINS</option>
+          <option value="MAIN">MAIN</option>
           <option value="PRELIMS">PRELIMS</option>
         </select>
 
@@ -397,7 +416,7 @@ export default function Round() {
       </form>
 
       {/* Table */}
-      <div className="mt-8 mx-10">
+      <div className="mt-8 mx-10 ">
         <h2 className="text-xl font-semibold mb-2">All Rounds</h2>
         {rounds.length > 0 ? (
           <div className="w-full border rounded bg-white">
@@ -407,6 +426,7 @@ export default function Round() {
                   <th className="p-2 border">Round</th>
                   <th className="p-2 border">Section</th>
                   <th className="p-2 border">Board</th>
+                  <th className="p-2 border">Exam</th>
 
                   <th className="p-2 border">Type</th>
                   <th className="p-2 border">Active</th>
@@ -416,12 +436,16 @@ export default function Round() {
               <tbody>
                 {rounds.map((e, i) => (
                   <tr key={i} className="hover:bg-gray-50">
-                    <td className="p-2 border">{e.roundName}</td>
+                    <td className="p-2 border">{e.roundName.toUpperCase()}</td>
+                    <td className="p-2 border">{e.sectionName.toUpperCase()}</td>
                     <td className="p-2 border">
-                    {e.sectionName}
+                      {
+                        examBoards.find((eb) => eb.id === e.examId)
+                          ?.examBoardShortName.toUpperCase()
+                      }
                     </td>
                     <td className="p-2 border">
-                      {"N/A"}
+                      {examBoards.find((eb) => eb.id === e.examId)?.examName.toUpperCase()}
                     </td>
 
                     <td className="p-2 border">{e.roundType}</td>
