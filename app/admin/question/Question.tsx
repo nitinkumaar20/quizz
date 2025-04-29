@@ -121,6 +121,9 @@ export default function QuestionManager() {
             : Number(value)
           : value,
     }));
+
+    console.log(formData, "formData ques");
+    
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -434,9 +437,6 @@ export default function QuestionManager() {
           })}
         </select>
 
-
-
-
         <select
           name="topicId"
           value={formData.topicId ?? ""}
@@ -458,31 +458,7 @@ export default function QuestionManager() {
           })}
         </select>
 
-
         <select
-         name="roundId"
-         value={formData.roundId ?? ""}
-         onChange={handleChange}
-         className="w-full border p-2 rounded"
-         required
-        >
-          <option value="">Select Round</option>
-          {rounds.map((round) => {
-            const label = round.roundName.toUpperCase();
-            const subject = subjects.find((s) => s.id === round.examId);
-            if (subject?.id !== Number(selectedSubject)) return null; // Filter topics based on selected subject
-
-
-
-            return (
-              <option key={round.id} value={subject.id}>
-                {label}
-              </option>
-            );
-          })}
-        </select>
-
-        {/* <select
           name="roundId"
           value={formData.roundId ?? ""}
           onChange={handleChange}
@@ -490,12 +466,21 @@ export default function QuestionManager() {
           required
         >
           <option value="">Select Round</option>
-          {rounds.map((round) => (
-            <option key={round.id} value={round.id}>
-              {round.roundName} - {round.sectionName}
-            </option>
-          ))}
-        </select> */}
+          {rounds.map((round) => {
+            const label = round.roundName.toUpperCase();
+            const Exams = examBoards.find((eb) => eb.id === round.examId);
+            if (
+              Exams?.examName.toLowerCase() !== selectedExamName.toLowerCase()
+            )
+              return null;
+
+            return (
+              <option key={round.id} value={Exams.id}>
+                {label}
+              </option>
+            );
+          })}
+        </select>
 
         <input
           name="questionYear"

@@ -115,14 +115,7 @@ export default function TopicManager() {
     }
   };
 
-  // Filter subjects based on selected exam and board
-  // const filteredSubjects = subjects.filter((subject) => {
-  //   const examBoard = examBoards.find((eb) => eb.id === subject.examId);
-  //   return (
-  //     examBoard?.examName === selectedExam &&
-  //     examBoard?.examBoardShortName === selectedBoard
-  //   );
-  // });
+ 
 
   return (
     <div className="mx-10">
