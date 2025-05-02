@@ -39,6 +39,7 @@ interface Topic {
 
 export default function QuestionManager() {
   const [selectedBoard, setselectedBoard] = useState("");
+  // const [selectedTopic, setselectedTopic] = useState("");
   const [selectedExamName, setselectedExamName] = useState("");
   const [selectedSubject, setselectedSubject] = useState("");
   const [examBoards, setExamBoards] = useState<any[]>([]);
@@ -68,6 +69,23 @@ export default function QuestionManager() {
     fetchRounds();
     fetchTopics();
   }, []);
+
+  const resetForm = () => {
+    setFormData({
+      questionText: "",
+      questionTitle: "",
+      answerA: "",
+      answerB: "",
+      answerC: "",
+      answerD: "",
+      answerCorrect: "A",
+      topicId: null,
+      roundId: null,
+      active: true,
+      questionYear: "",
+    });
+    setEditId(undefined);
+  };
 
   const fetchQuestions = async () => {
     try {
@@ -123,7 +141,6 @@ export default function QuestionManager() {
     }));
 
     console.log(formData, "formData ques");
-    
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,6 +148,19 @@ export default function QuestionManager() {
 
     if (formData.roundId === null || formData.topicId === null) {
       Swal.fire("Error", "Please select both Round and Topic", "error");
+      return;
+    }
+
+    const matchedTopic = topics.find(
+      (eb) => eb.id === formData.topicId && eb.active === true
+    );
+
+    const matchedRound = rounds.find(
+      (eb) => eb.id === formData.roundId && eb.active === true
+    );
+
+    if (!matchedTopic || !matchedRound) {
+      Swal.fire("Error", "Matching topic and round not found", "error");
       return;
     }
 
@@ -164,23 +194,6 @@ export default function QuestionManager() {
       console.error("Failed to update question", error);
       Swal.fire("Error", "Failed to update question", "error");
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      questionText: "",
-      questionTitle: "",
-      answerA: "",
-      answerB: "",
-      answerC: "",
-      answerD: "",
-      answerCorrect: "A",
-      topicId: null,
-      roundId: null,
-      active: true,
-      questionYear: "",
-    });
-    setEditId(undefined);
   };
 
   return (
@@ -451,7 +464,7 @@ export default function QuestionManager() {
             if (subject?.id !== Number(selectedSubject)) return null; // Filter topics based on selected subject
 
             return (
-              <option key={topic.id} value={subject.id}>
+              <option key={topic.id} value={topic.id}>
                 {label}
               </option>
             );
@@ -466,20 +479,19 @@ export default function QuestionManager() {
           required
         >
           <option value="">Select Round</option>
-          {rounds.map((round) => {
-            const label = round.roundName.toUpperCase();
-            const Exams = examBoards.find((eb) => eb.id === round.examId);
-            if (
-              Exams?.examName.toLowerCase() !== selectedExamName.toLowerCase()
-            )
-              return null;
-
-            return (
-              <option key={round.id} value={Exams.id}>
-                {label}
+          {rounds
+            .filter((round) => {
+              const Exams = examBoards.find((eb) => eb.id === round.examId);
+              return (
+                round.active &&
+                Exams?.examName.toLowerCase() === selectedExamName.toLowerCase()
+              );
+            })
+            .map((round) => (
+              <option key={round.id} value={round.id}>
+                {round.roundName.toUpperCase()}
               </option>
-            );
-          })}
+            ))}
         </select>
 
         <input
@@ -517,34 +529,55 @@ export default function QuestionManager() {
               <tr>
                 <th className="p-2 border">Question</th>
                 <th className="p-2 border">Title</th>
-                <th className="p-2 border">Year</th>
+                <th className="p-2 border">Board</th>
+                <th className="p-2 border">Exam</th>
+                <th className="p-2 border">Subject</th>
                 <th className="p-2 border">Topic</th>
                 <th className="p-2 border">Round</th>
+                <th className="p-2 border">Year</th>
                 <th className="p-2 border">Edit</th>
               </tr>
             </thead>
             <tbody>
-              {questions.map((q, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="p-2 border">{q.questionText}</td>
-                  <td className="p-2 border">{q.questionTitle}</td>
-                  <td className="p-2 border">{q.questionYear}</td>
-                  <td className="p-2 border">
-                    {topics.find((t) => t.id === q.topicId)?.topicName || "N/A"}
-                  </td>
-                  <td className="p-2 border">
-                    {rounds.find((r) => r.id === q.roundId)?.roundName || "N/A"}
-                  </td>
-                  <td className="p-2 border">
-                    <button
-                      onClick={() => handleEdit(q)}
-                      className="text-blue-600 hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {questions.map((q, idx) => {
+                const topic = topics.find((t) => t.id === q.topicId);
+                const subject = subjects.find((s) => s.id === topic?.subjectId);
+                const examBoard = examBoards.find(
+                  (eb) => eb.id === subject?.examId
+                );
+
+                return (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="p-2 border">{q.questionText}</td>
+                    <td className="p-2 border">{q.questionTitle}</td>
+                    <td className="p-2 border">
+                      {examBoard?.examBoardShortName.toUpperCase() || "N/A"}
+                    </td>
+                    <td className="p-2 border">
+                      {examBoard?.examName.toUpperCase() || "N/A"}
+                    </td>
+                    <td className="p-2 border">
+                      {subject?.subjectName.toUpperCase() || "N/A"}
+                    </td>
+                    <td className="p-2 border">
+                      {topic?.topicName.toUpperCase() || "N/A"}
+                    </td>
+                    <td className="p-2 border">{q.questionYear}</td>
+                    <td className="p-2 border">
+                      {rounds.find((r) => r.id === q.roundId)?.roundName ||
+                        "N/A"}
+                    </td>
+                    <td className="p-2 border">
+                      <button
+                        onClick={() => handleEdit(q)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -91,7 +91,7 @@ export default function Round() {
 
     const matchedExamBoard = examBoards.find(
       (eb) =>
-        eb.examName === selectedExam && eb.examBoardShortName === selectedBoard
+        eb.examName.toLowerCase() === selectedExam.toLowerCase() && eb.examBoardShortName === selectedBoard
     );
 
     if (!matchedExamBoard) {
