@@ -1,150 +1,151 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 
-interface ExamBoard {
-  _id: string;
-  boardName: string;
-  examName: string;
-  shortName: string;
-  subjects: { _id: string; subjectName: string }[];
-  topics: { _id: string; topicName: string; subjectId: string }[];
+interface ParsedQuestion {
+  questionText: string;
+  questionTitle: string;
+  answerA: string;
+  answerB: string;
+  answerC: string;
+  answerD: string;
+  answerCorrect: string;
+  questionYear: string;
 }
 
-interface Round {
-  _id: string;
-  roundName: string;
+interface FinalQuestion extends ParsedQuestion {
+  topicId: number;
+  roundId: number;
+  active: boolean;
 }
 
-const UploadQuestionsFromWord: React.FC = () => {
-  const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [selectedBoard, setSelectedBoard] = useState<string>("");
-  const [selectedExam, setSelectedExam] = useState<string>("");
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
-  const [selectedTopic, setSelectedTopic] = useState<string>("");
-  const [selectedRound, setSelectedRound] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
+export default function BulkQuestionUploader() {
+  const [examBoards, setExamBoards] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [topics, setTopics] = useState<any[]>([]);
+  const [rounds, setRounds] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<FinalQuestion[]>([]);
+
+  const [selectedBoard, setSelectedBoard] = useState("");
+  const [selectedExam, setSelectedExam] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("");
+  const [selectedRound, setSelectedRound] = useState("");
 
   useEffect(() => {
-    axios.get("/api/examboard").then((res) => {
-      setExamBoards(res.data);
-    });
-    axios.get("/api/round").then((res) => {
-      setRounds(res.data);
-    });
+    fetch("http://localhost:1100/api/examboard").then(res => res.json()).then(setExamBoards);
+    fetch("http://localhost:1100/api/subject").then(res => res.json()).then(setSubjects);
+    fetch("http://localhost:1100/api/topic").then(res => res.json()).then(setTopics);
+    fetch("http://localhost:1100/api/round").then(res => res.json()).then(setRounds);
   }, []);
 
-  const handleUpload = async () => {
-    if (!file || !selectedTopic || !selectedSubject || !selectedRound) {
-      alert("Please select all options and upload a Word file.");
-      return;
-    }
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const formData = new FormData();
-    formData.append("wordFile", file);
-    formData.append("boardId", selectedBoard);
-    formData.append("examId", selectedExam);
-    formData.append("subjectId", selectedSubject);
-    formData.append("topicId", selectedTopic);
-    formData.append("roundId", selectedRound);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const data = evt.target?.result;
+      const workbook = XLSX.read(data, { type: "binary" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const raw: ParsedQuestion[] = XLSX.utils.sheet_to_json(sheet);
 
-    try {
-      const res = await axios.post("/api/question/upload-word", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert("Questions uploaded successfully!");
-    } catch (error) {
-      alert("Failed to upload questions.");
-    }
+      const enriched: FinalQuestion[] = raw.map((item) => ({
+        ...item,
+        topicId: parseInt(selectedTopic),
+        roundId: parseInt(selectedRound),
+        active: true,
+      }));
+
+      setQuestions(enriched);
+    };
+    reader.readAsBinaryString(file);
   };
 
-  const boards = [...new Set(examBoards.map((b) => b.boardName))];
-  const exams = examBoards.filter((b) => b.boardName === selectedBoard);
-  const subjects = exams.find((e) => e._id === selectedExam)?.subjects || [];
-  const topics = exams.find((e) => e._id === selectedExam)?.topics.filter(
-    (t) => t.subjectId === selectedSubject
-  ) || [];
-
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
-      <h2 className="text-xl font-semibold mb-4">Upload Questions (Word File)</h2>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Bulk Question Upload</h2>
 
-      <div className="space-y-4">
-        {/* Board */}
-        <select className="w-full border p-2 rounded" onChange={(e) => {
-          setSelectedBoard(e.target.value);
-          setSelectedExam("");
-          setSelectedSubject("");
-          setSelectedTopic("");
-        }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <select className="p-2 border rounded" onChange={(e) => setSelectedBoard(e.target.value)} value={selectedBoard}>
           <option value="">Select Board</option>
-          {boards.map((board) => (
-            <option key={board} value={board}>{board}</option>
+          {examBoards.map((eb) => (
+            <option key={eb.id} value={eb.id}>{eb.boardName}</option>
           ))}
         </select>
 
-        {/* Exam */}
-        <select className="w-full border p-2 rounded" onChange={(e) => {
-          setSelectedExam(e.target.value);
-          setSelectedSubject("");
-          setSelectedTopic("");
-        }} value={selectedExam}>
+        <select className="p-2 border rounded" onChange={(e) => setSelectedExam(e.target.value)} value={selectedExam}>
           <option value="">Select Exam</option>
-          {exams.map((exam) => (
-            <option key={exam._id} value={exam._id}>
-              {exam.examName}
-            </option>
-          ))}
+          {examBoards
+            .filter((eb) => eb.id === selectedBoard)
+            .flatMap((eb) => eb.exams || [])
+            .map((ex: any) => (
+              <option key={ex.id} value={ex.id}>{ex.examName}</option>
+            ))}
         </select>
 
-        {/* Subject */}
-        <select className="w-full border p-2 rounded" onChange={(e) => {
-          setSelectedSubject(e.target.value);
-          setSelectedTopic("");
-        }} value={selectedSubject}>
+        <select className="p-2 border rounded" onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject}>
           <option value="">Select Subject</option>
-          {subjects.map((sub) => (
-            <option key={sub._id} value={sub._id}>
-              {sub.subjectName}
-            </option>
+          {subjects.map((subj) => (
+            <option key={subj.id} value={subj.id}>{subj.name}</option>
           ))}
         </select>
 
-        {/* Topic */}
-        <select className="w-full border p-2 rounded" onChange={(e) => setSelectedTopic(e.target.value)} value={selectedTopic}>
+        <select className="p-2 border rounded" onChange={(e) => setSelectedTopic(e.target.value)} value={selectedTopic}>
           <option value="">Select Topic</option>
-          {topics.map((topic) => (
-            <option key={topic._id} value={topic._id}>
-              {topic.topicName}
-            </option>
+          {topics.map((t) => (
+            <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>
 
-        {/* Round */}
-        <select className="w-full border p-2 rounded" onChange={(e) => setSelectedRound(e.target.value)} value={selectedRound}>
+        <select className="p-2 border rounded" onChange={(e) => setSelectedRound(e.target.value)} value={selectedRound}>
           <option value="">Select Round</option>
-          {rounds.map((round) => (
-            <option key={round._id} value={round._id}>
-              {round.roundName}
-            </option>
+          {rounds.map((r) => (
+            <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </select>
+      </div>
 
-        {/* Word File Upload */}
-        <input type="file" accept=".doc,.docx" onChange={(e) => {
-          if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-          }
-        }} className="w-full border p-2 rounded" />
+      <div className="mt-6">
+        <input type="file" accept=".xlsx" onChange={handleFileUpload} className="p-2 border rounded w-full" />
+      </div>
 
-        {/* Submit Button */}
-        <button onClick={handleUpload} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-          Upload Questions
-        </button>
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-2">Questions Table</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="p-2 border">Title</th>
+                <th className="p-2 border">Text</th>
+                <th className="p-2 border">A</th>
+                <th className="p-2 border">B</th>
+                <th className="p-2 border">C</th>
+                <th className="p-2 border">D</th>
+                <th className="p-2 border">Correct</th>
+                <th className="p-2 border">Year</th>
+                <th className="p-2 border">Topic ID</th>
+                <th className="p-2 border">Round ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {questions.map((q, index) => (
+                <tr key={index} className="border-t">
+                  <td className="p-2 border">{q.questionTitle}</td>
+                  <td className="p-2 border">{q.questionText}</td>
+                  <td className="p-2 border">{q.answerA}</td>
+                  <td className="p-2 border">{q.answerB}</td>
+                  <td className="p-2 border">{q.answerC}</td>
+                  <td className="p-2 border">{q.answerD}</td>
+                  <td className="p-2 border">{q.answerCorrect}</td>
+                  <td className="p-2 border">{q.questionYear}</td>
+                  <td className="p-2 border">{q.topicId}</td>
+                  <td className="p-2 border">{q.roundId}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
-};
-
-export default UploadQuestionsFromWord;
+}

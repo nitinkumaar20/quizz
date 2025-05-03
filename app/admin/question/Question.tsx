@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+
+
 interface Question {
   id?: string;
   questionText: string;
@@ -65,11 +67,9 @@ export default function QuestionManager() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchQuestions();
-    fetchRounds();
-    fetchTopics();
+    Promise.all([fetchQuestions(), fetchRounds(), fetchTopics()]);
   }, []);
-
+  
   const resetForm = () => {
     setFormData({
       questionText: "",

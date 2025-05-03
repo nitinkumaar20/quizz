@@ -2,20 +2,12 @@
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-interface ExamBoard {
-  id?: string;
-  examBoardType: string;
-  examBoardLongName: string;
-  examBoardShortName: string;
-  examName: string;
-  boardLogo: string;
-  examLogo: string;
-  active: boolean;
-}
+import { useGlobalDataStore } from "../../stores/globalDataStores";
+import { ExamBoard } from "../../stores/globalDataStores";
 
 export default function ExamBoardManager() {
-  const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
+  const { examBoards, fetchExamBoards } = useGlobalDataStore();
+
   const [formData, setFormData] = useState<ExamBoard>({
     examBoardType: "",
     examBoardLongName: "",
@@ -29,23 +21,14 @@ export default function ExamBoardManager() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | undefined>(undefined);
 
-  // Fetch all boards
-  const fetchExamBoards = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/examboard/");
-      console.log(res.data, "log");
-
-      setExamBoards(res.data.data);
-    } catch (error) {
-      console.error("Error fetching boards:", error);
-    }
-  };
-
   // POST new board
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:1100/api/examboard/", formData);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}`,
+        formData
+      );
       setFormData({
         examBoardType: "",
         examBoardLongName: "",
@@ -98,7 +81,7 @@ export default function ExamBoardManager() {
 
     try {
       await axios.put(
-        `http://localhost:1100/api/examboard/${editId}`,
+        `${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}/${editId}`,
         formData
       );
       Swal.fire({
