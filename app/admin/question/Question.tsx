@@ -4,52 +4,31 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { useGlobalDataStore } from "../../stores/globalDataStores";
+import { QuestionType } from "../../stores/globalDataStores";
 
 
-interface Question {
-  id?: string;
-  questionText: string;
-  questionTitle: string;
-  answerA: string;
-  answerB: string;
-  answerC: string;
-  answerD: string;
-  answerCorrect: string;
-  topicId: number | null;
-  roundId: number | null;
-  active: boolean;
-  questionYear: string;
-}
 
-interface Round {
-  id: number;
-  roundName: string;
-  sectionName: string;
-  roundType: string;
-  examId: number;
-  ownerId: number;
-  accessType: "PUBLIC" | "PRIVATE";
-  active: boolean;
-}
-
-interface Topic {
-  id: number;
-  topicName: string;
-  subjectId: number;
-  active: boolean;
-}
 
 export default function QuestionManager() {
+  const {
+    examBoards,
+    questions,
+    subjects,
+    rounds,
+    topics,
+    fetchQuestions,
+    fetchRounds,
+    fetchTopics,
+    fetchExamBoards,
+  } = useGlobalDataStore();
+  console.log(questions, "questions");
+
   const [selectedBoard, setselectedBoard] = useState("");
-  // const [selectedTopic, setselectedTopic] = useState("");
   const [selectedExamName, setselectedExamName] = useState("");
   const [selectedSubject, setselectedSubject] = useState("");
-  const [examBoards, setExamBoards] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [formData, setFormData] = useState<Question>({
+
+  const [formData, setFormData] = useState<QuestionType>({
     questionText: "",
     questionTitle: "",
     answerA: "",
@@ -67,9 +46,12 @@ export default function QuestionManager() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchQuestions(), fetchRounds(), fetchTopics()]);
+    fetchQuestions();
+    fetchRounds();
+    fetchTopics();
+    fetchExamBoards();
   }, []);
-  
+
   const resetForm = () => {
     setFormData({
       questionText: "",
@@ -87,38 +69,6 @@ export default function QuestionManager() {
     setEditId(undefined);
   };
 
-  const fetchQuestions = async () => {
-    try {
-      const resQuestion = await axios.get("http://localhost:1100/api/question");
-      const resBoard = await axios.get("http://localhost:1100/api/examboard");
-      const resSubject = await axios.get("http://localhost:1100/api/subject");
-      setQuestions(resQuestion.data.data);
-      setExamBoards(resBoard.data.data);
-      setSubjects(resSubject.data.data);
-    } catch (error) {
-      console.error("Failed to fetch questions", error);
-    }
-  };
-
-  const fetchRounds = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/round");
-      setRounds(res.data.data);
-      console.log(res.data.data, "round");
-    } catch (error) {
-      console.error("Failed to fetch rounds", error);
-    }
-  };
-
-  const fetchTopics = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/topic/");
-      setTopics(res.data.data);
-      console.log(res.data.data, "topic");
-    } catch (error) {
-      console.error("Failed to fetch topics", error);
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -152,11 +102,11 @@ export default function QuestionManager() {
     }
 
     const matchedTopic = topics.find(
-      (eb) => eb.id === formData.topicId && eb.active === true
+      (eb) => Number(eb.id) === formData.topicId && eb.active === true
     );
 
     const matchedRound = rounds.find(
-      (eb) => eb.id === formData.roundId && eb.active === true
+      (eb) => Number(eb.id) === formData.roundId && eb.active === true
     );
 
     if (!matchedTopic || !matchedRound) {
@@ -165,7 +115,7 @@ export default function QuestionManager() {
     }
 
     try {
-      await axios.post("http://localhost:1100/api/question", formData);
+      await axios.post(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`, formData);
       Swal.fire("Success", "Question added successfully", "success");
       resetForm();
       fetchQuestions();
@@ -175,7 +125,7 @@ export default function QuestionManager() {
     }
   };
 
-  const handleEdit = (question: Question) => {
+  const handleEdit = (question: QuestionType) => {
     setFormData(question);
     setEditId(question.id);
     setIsEditModalOpen(true);
@@ -185,7 +135,7 @@ export default function QuestionManager() {
     if (!editId) return;
 
     try {
-      await axios.put(`http://localhost:1100/api/question/${editId}`, formData);
+      await axios.put(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}/${editId}`, formData);
       Swal.fire("Updated!", "Question updated successfully.", "success");
       resetForm();
       setIsEditModalOpen(false);
@@ -435,7 +385,9 @@ export default function QuestionManager() {
           <option value="">Select Subject</option>
           {subjects.map((subject) => {
             const label = subject.subjectName.toUpperCase();
-            const examBoard = examBoards.find((eb) => eb.id === subject.examId);
+            const examBoard = examBoards.find(
+              (eb) => Number(eb.id) === subject.examId
+            );
             if (
               examBoard?.examName.toLowerCase() !==
               selectedExamName.toLowerCase()
@@ -460,8 +412,10 @@ export default function QuestionManager() {
           <option value="">Select topic</option>
           {topics.map((topic) => {
             const label = topic.topicName.toUpperCase();
-            const subject = subjects.find((s) => s.id === topic.subjectId);
-            if (subject?.id !== Number(selectedSubject)) return null; // Filter topics based on selected subject
+            const subject = subjects.find(
+              (s) => Number(s.id) === topic.subjectId
+            );
+            if (Number(subject?.id) !== Number(selectedSubject)) return null; // Filter topics based on selected subject
 
             return (
               <option key={topic.id} value={topic.id}>
@@ -481,7 +435,9 @@ export default function QuestionManager() {
           <option value="">Select Round</option>
           {rounds
             .filter((round) => {
-              const Exams = examBoards.find((eb) => eb.id === round.examId);
+              const Exams = examBoards.find(
+                (eb) => Number(eb.id) === round.examId
+              );
               return (
                 round.active &&
                 Exams?.examName.toLowerCase() === selectedExamName.toLowerCase()
@@ -540,7 +496,7 @@ export default function QuestionManager() {
             </thead>
             <tbody>
               {questions.map((q, idx) => {
-                const topic = topics.find((t) => t.id === q.topicId);
+                const topic = topics.find((t) => Number(t.id) === q.topicId);
                 const subject = subjects.find((s) => s.id === topic?.subjectId);
                 const examBoard = examBoards.find(
                   (eb) => eb.id === subject?.examId
@@ -564,8 +520,8 @@ export default function QuestionManager() {
                     </td>
                     <td className="p-2 border">{q.questionYear}</td>
                     <td className="p-2 border">
-                      {rounds.find((r) => r.id === q.roundId)?.roundName ||
-                        "N/A"}
+                      {rounds.find((r) => Number(r.id) === q.roundId)
+                        ?.roundName || "N/A"}
                     </td>
                     <td className="p-2 border">
                       <button

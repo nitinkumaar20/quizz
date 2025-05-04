@@ -4,21 +4,14 @@ import React from "react";
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-interface IRound {
-  id?: string;
-  roundName: string;
-  sectionName: string;
-  examId: number | null;
-  ownerId: number | null;
-  active: boolean;
-  roundType: "PRELIMS" | "MAIN";
-  accessType: "PUBLIC" | "PRIVATE";
-}
+import { useGlobalDataStore } from "../../stores/globalDataStores";
+import { RoundType } from "../../stores/globalDataStores";
 
 export default function Round() {
-  const [rounds, setRounds] = useState<IRound[]>([]);
-  const [formData, setFormData] = useState<IRound>({
+  const { rounds, fetchRounds, examBoards, fetchExamBoards } =
+    useGlobalDataStore();
+
+  const [formData, setFormData] = useState<RoundType>({
     roundName: "",
     sectionName: "",
     examId: null,
@@ -30,42 +23,16 @@ export default function Round() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | undefined>(undefined);
-  interface ExamBoard {
-    id: number;
-    examName: string;
-    examBoardShortName: string;
-  }
 
-  const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [editExamName, setEditExamName] = useState<string>("");
   const [editBoardShortName, setEditBoardShortName] = useState<string>("");
 
-  // Fetch subjects
-  const fetchRounds = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/round/");
-      setRounds(res.data.data);
-    } catch (error) {
-      console.error("Error fetching rounds:", error);
-    }
-  };
-
   useEffect(() => {
     fetchRounds();
     fetchExamBoards();
   }, []);
-
-  const fetchExamBoards = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/examboard");
-      console.log(res, "res");
-      setExamBoards(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch exam boards", err);
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -91,7 +58,8 @@ export default function Round() {
 
     const matchedExamBoard = examBoards.find(
       (eb) =>
-        eb.examName.toLowerCase() === selectedExam.toLowerCase() && eb.examBoardShortName === selectedBoard
+        eb.examName.toLowerCase() === selectedExam.toLowerCase() &&
+        eb.examBoardShortName === selectedBoard
     );
 
     if (!matchedExamBoard) {
@@ -111,7 +79,10 @@ export default function Round() {
     console.log(submitData, "submitData");
 
     try {
-      await axios.post("http://localhost:1100/api/round/", submitData);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_ROUNDS_API_KEY} `,
+        submitData
+      );
       Swal.fire("Success", "Round created successfully", "success");
       setFormData({
         roundName: "",
@@ -145,7 +116,7 @@ export default function Round() {
       setEditId(id);
 
       const matchingBoard = examBoards.find(
-        (eb) => eb.id === subjectToEdit.examId
+        (eb) => Number(eb.id) === subjectToEdit.examId
       );
       setEditExamName(matchingBoard?.examName || "");
       setEditBoardShortName(matchingBoard?.examBoardShortName || "");
@@ -180,7 +151,7 @@ export default function Round() {
 
     try {
       await axios.put(
-        `http://localhost:1100/api/round/${editId}`, // corrected URL
+        `${process.env.NEXT_PUBLIC_ROUNDS_API_KEY}/${editId}`, // corrected URL
         updateData
       );
       Swal.fire("Updated!", "Round updated successfully.", "success");
@@ -320,8 +291,6 @@ export default function Round() {
         onSubmit={handleSubmit}
         className="space-y-3 max-w-md mx-10 flex flex-col justify-start items-start"
       >
-    
-
         <input
           type="text"
           name="roundName"
@@ -340,7 +309,7 @@ export default function Round() {
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
-            <select
+        <select
           value={selectedBoard}
           onChange={(e) => setSelectedBoard(e.target.value)}
           className="w-full border p-2 rounded"
@@ -437,15 +406,18 @@ export default function Round() {
                 {rounds.map((e, i) => (
                   <tr key={i} className="hover:bg-gray-50">
                     <td className="p-2 border">{e.roundName.toUpperCase()}</td>
-                    <td className="p-2 border">{e.sectionName.toUpperCase()}</td>
                     <td className="p-2 border">
-                      {
-                        examBoards.find((eb) => eb.id === e.examId)
-                          ?.examBoardShortName.toUpperCase()
-                      }
+                      {e.sectionName.toUpperCase()}
                     </td>
                     <td className="p-2 border">
-                      {examBoards.find((eb) => eb.id === e.examId)?.examName.toUpperCase()}
+                      {examBoards
+                        .find((eb) => Number(eb.id) === e.examId)
+                        ?.examBoardShortName.toUpperCase()}
+                    </td>
+                    <td className="p-2 border">
+                      {examBoards
+                        .find((eb) => Number(eb.id) === e.examId)
+                        ?.examName.toUpperCase()}
                     </td>
 
                     <td className="p-2 border">{e.roundType}</td>

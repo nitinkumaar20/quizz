@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-export interface ExamBoard {
+export interface ExamBoardType {
     id?: string;
   examBoardType: string;
   examBoardLongName: string;
@@ -13,40 +13,61 @@ export interface ExamBoard {
   active: boolean;
 }
 
-interface Subject {
-  subjectName: string;
-  examId: number;
-  accessType: string;
-  active: boolean;
+export interface SubjectType {
+  id?: string;
+    subjectName: string;
+    examId: number | null;
+    ownerId: number | null;
+    active: boolean;
+    accessType: "PUBLIC" | "PRIVATE";
 }
 
-interface Topic {
+export interface TopicType {
+  id?: string;
   topicName: string;
-  subjectId: number;
+  subjectId: number | null;
   active: boolean;
 }
 
-interface Round {
+export interface RoundType {
+  id?: string;
   roundName: string;
   sectionName: string;
-  roundType: string;
-  examId: number;
-  ownerId: number;
-  accessType: string;
+  examId: number | null;
+  ownerId: number | null;
   active: boolean;
+  roundType: "PRELIMS" | "MAIN";
+  accessType: "PUBLIC" | "PRIVATE";
+}
+
+export interface QuestionType {
+  id?: string;
+  questionText: string;
+  questionTitle: string;
+  answerA: string;
+  answerB: string;
+  answerC: string;
+  answerD: string;
+  answerCorrect: string;
+  topicId: number | null;
+  roundId: number | null;
+  active: boolean;
+  questionYear: string;
 }
 
 interface GlobalDataState {
  
-  examBoards: ExamBoard[];
-  subjects: Subject[];
-  topics: Topic[];
-  rounds: Round[];
+  examBoards: ExamBoardType[];
+  subjects: SubjectType[];
+  topics: TopicType[];
+  rounds: RoundType[];
+  questions: QuestionType[],
   loading: boolean;
   fetchExamBoards: () => Promise<void>;
-  fetchSubjects: (examId?: number) => Promise<void>;
-  fetchTopics: (subjectId?: number) => Promise<void>;
-  fetchRounds: (boardShortName?: string, examName?: string) => Promise<void>;
+  fetchSubjects: () => Promise<void>;
+  fetchTopics: () => Promise<void>;
+  fetchRounds: () => Promise<void>;
+  fetchQuestions: () => Promise<void>;
 
 }
 
@@ -56,6 +77,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
   subjects: [],
   topics: [],
   rounds: [],
+  questions: [],
   loading: false,
 
   fetchExamBoards: async () => {
@@ -71,15 +93,11 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     }
   },
 
-  fetchSubjects: async (examId) => {
+  fetchSubjects: async () => {
     set({ loading: true });
     try {
-      let url = `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}}`;
-      if (examId) {
-        url += `?examId=${examId}`;
-      }
-      const res = await axios.get(url);
-      set({ subjects: Array.isArray(res.data) ? res.data : [] });
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}`);
+      set({ subjects: (res.data.data) ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching subjects:", error);
     } finally {
@@ -87,15 +105,11 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     }
   },
 
-  fetchTopics: async (subjectId) => {
+  fetchTopics: async () => {
     set({ loading: true });
     try {
-      let url = `${process.env.NEXT_PUBLIC_TOPICS_API_KEY}`;
-      if (subjectId) {
-        url += `?subjectId=${subjectId}`;
-      }
-      const res = await axios.get(url);
-      set({ topics: Array.isArray(res.data) ? res.data : [] });
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_TOPICS_API_KEY}`);
+      set({ topics: (res.data.data) ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching topics:", error);
     } finally {
@@ -103,17 +117,24 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     }
   },
 
-  fetchRounds: async (boardShortName, examName) => {
+  fetchRounds: async () => {
     set({ loading: true });
     try {
-      let url = `${process.env.NEXT_PUBLIC_ROUNDS_API_KEY}`;
-      const params = [];
-      if (boardShortName) params.push(`board=${boardShortName}`);
-      if (examName) params.push(`exam=${examName}`);
-      if (params.length > 0) url += `?${params.join("&")}`;
-
-      const res = await axios.get(url);
-      set({ rounds: Array.isArray(res.data) ? res.data : [] });
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_ROUNDS_API_KEY}`);
+      set({ rounds: (res.data.data) ? res.data.data : [] });
+    } catch (error) {
+      console.error("Error fetching rounds:", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchQuestions: async () => {
+    set({ loading: true });
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`);
+      console.log(res,'log');  
+      
+      set({ questions: (res.data.data) ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching rounds:", error);
     } finally {

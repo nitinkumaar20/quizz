@@ -3,12 +3,12 @@ import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useGlobalDataStore } from "../../stores/globalDataStores";
-import { ExamBoard } from "../../stores/globalDataStores";
+import { ExamBoardType } from "../../stores/globalDataStores";
 
 export default function ExamBoardManager() {
   const { examBoards, fetchExamBoards } = useGlobalDataStore();
 
-  const [formData, setFormData] = useState<ExamBoard>({
+  const [formData, setFormData] = useState<ExamBoardType>({
     examBoardType: "",
     examBoardLongName: "",
     examBoardShortName: "",

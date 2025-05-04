@@ -2,19 +2,15 @@
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-interface Subject {
-  id?: string;
-  subjectName: string;
-  examId: number | null;
-  ownerId: number | null;
-  active: boolean;
-  accessType: "PUBLIC" | "PRIVATE";
-}
+import { useGlobalDataStore } from "../../stores/globalDataStores";
+import { SubjectType } from "../../stores/globalDataStores";
 
 export default function SubjectManager() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [formData, setFormData] = useState<Subject>({
+  const { fetchSubjects, subjects, examBoards, fetchExamBoards } =
+    useGlobalDataStore();
+
+
+  const [formData, setFormData] = useState<SubjectType>({
     subjectName: "",
     examId: null,
     ownerId: null,
@@ -24,42 +20,18 @@ export default function SubjectManager() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | undefined>(undefined);
-  interface ExamBoard {
-    id: number;
-    examName: string;
-    examBoardShortName: string;
-  }
 
-  const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [editExamName, setEditExamName] = useState<string>("");
   const [editBoardShortName, setEditBoardShortName] = useState<string>("");
-
-  // Fetch subjects
-  const fetchSubjects = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/subject/");
-      setSubjects(res.data.data);
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-    }
-  };
 
   useEffect(() => {
     fetchSubjects();
     fetchExamBoards();
   }, []);
 
-  const fetchExamBoards = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/examboard");
-      console.log(res, "res");
-      setExamBoards(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch exam boards", err);
-    }
-  };
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -100,7 +72,10 @@ export default function SubjectManager() {
     };
 
     try {
-      await axios.post("http://localhost:1100/api/subject/", submitData);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}`,
+        submitData
+      );
       Swal.fire("Success", "Subject created successfully", "success");
       setFormData({
         subjectName: "",
@@ -114,7 +89,10 @@ export default function SubjectManager() {
       fetchSubjects();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        console.error("Error submitting subject:", err.response?.data || err.message);
+        console.error(
+          "Error submitting subject:",
+          err.response?.data || err.message
+        );
       } else {
         console.error("Unexpected error:", err);
       }
@@ -129,7 +107,7 @@ export default function SubjectManager() {
       setEditId(id);
 
       const matchingBoard = examBoards.find(
-        (eb) => eb.id === subjectToEdit.examId
+        (eb) => Number(eb.id) === subjectToEdit.examId
       );
       setEditExamName(matchingBoard?.examName || "");
       setEditBoardShortName(matchingBoard?.examBoardShortName || "");
@@ -159,11 +137,9 @@ export default function SubjectManager() {
       ownerId: 1, // TEMP: Hardcoded user ID (adjust based on your logic)
     };
 
-    console.log("🚀 Update Payload:", updateData);
-
     try {
       await axios.put(
-        `http://localhost:1100/api/subject/${editId}`,
+        `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}/${editId}`,
         updateData
       );
       Swal.fire("Updated!", "Subject updated successfully.", "success");
@@ -214,7 +190,6 @@ export default function SubjectManager() {
                 onChange={handleChange}
                 className="w-full border p-2 rounded"
               />
-         
 
               <select
                 value={editBoardShortName}
@@ -237,13 +212,17 @@ export default function SubjectManager() {
                 className="w-full border p-2 rounded"
               >
                 <option value="">Select Exam</option>
-                {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === editBoardShortName.toLowerCase())).map(
-                  (exam, i) => (
+                {examBoards
+                  .filter(
+                    (eb) =>
+                      eb.examBoardShortName.toLowerCase() ===
+                      editBoardShortName.toLowerCase()
+                  )
+                  .map((exam, i) => (
                     <option key={i} value={exam.examName}>
                       {exam.examName.toUpperCase()}
                     </option>
-                  )
-                )}
+                  ))}
               </select>
 
               <select
@@ -290,7 +269,6 @@ export default function SubjectManager() {
         onSubmit={handleSubmit}
         className="space-y-3 max-w-md mx-10 flex flex-col justify-start items-start"
       >
-        
         <select
           value={selectedBoard}
           onChange={(e) => setSelectedBoard(e.target.value)}
@@ -314,11 +292,17 @@ export default function SubjectManager() {
           required
         >
           <option value="">Select Exam</option>
-          {(examBoards.filter((eb) => eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase())).map((exam, i) => (
-            <option key={i} value={exam.examName}>
-              {exam.examName.toUpperCase()}
-            </option>
-          ))}
+          {examBoards
+            .filter(
+              (eb) =>
+                eb.examBoardShortName.toLowerCase() ===
+                selectedBoard.toLowerCase()
+            )
+            .map((exam, i) => (
+              <option key={i} value={exam.examName}>
+                {exam.examName.toUpperCase()}
+              </option>
+            ))}
         </select>
 
         <input
@@ -381,12 +365,13 @@ export default function SubjectManager() {
                   <tr key={i} className="hover:bg-gray-50">
                     <td className="p-2 border">{subj.subjectName}</td>
                     <td className="p-2 border">
-                      {examBoards.find((eb) => eb.id === subj.examId)
+                      {examBoards
+                        .find((eb) => Number(eb.id) === subj.examId)
                         ?.examName.toUpperCase() || "N/A"}
                     </td>
                     <td className="p-2 border">
                       {examBoards
-                        .find((eb) => eb.id === subj.examId)
+                        .find((eb) => Number(eb.id) === subj.examId)
                         ?.examBoardShortName.toUpperCase() || "N/A"}
                     </td>
 

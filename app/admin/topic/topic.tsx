@@ -2,38 +2,25 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-
-interface Topic {
-  id?: string;
-  topicName: string;
-  subjectId: number | null;
-  active: boolean;
-}
-
-interface Subject {
-  id: number;
-  subjectName: string;
-  examId: number;
-}
-
-interface ExamBoard {
-  id: number;
-  examId: number; // 👈 add this line
-  examBoardShortName: string;
-  examName: string;
-  // you can include others if needed
-}
+import { useGlobalDataStore } from "../../stores/globalDataStores";
+import { TopicType } from "../../stores/globalDataStores";
 
 export default function TopicManager() {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [formData, setFormData] = useState<Topic>({
+  const {
+    examBoards,
+    subjects,
+    topics,
+    fetchTopics,
+    fetchSubjects,
+    fetchExamBoards,
+  } = useGlobalDataStore();
+
+  const [formData, setFormData] = useState<TopicType>({
     topicName: "",
     subjectId: null,
     active: true,
   });
 
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [examBoards, setExamBoards] = useState<ExamBoard[]>([]);
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [selectedBoard, setSelectedBoard] = useState<string>("");
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
@@ -42,34 +29,6 @@ export default function TopicManager() {
     fetchSubjects();
     fetchExamBoards();
   }, []);
-
-  const fetchTopics = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/topic");
-      setTopics(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch topics", err);
-    }
-  };
-
-  const fetchSubjects = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/subject");
-      setSubjects(res.data.data);
-      console.log("Subjects fetched:", res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch subjects", err);
-    }
-  };
-
-  const fetchExamBoards = async () => {
-    try {
-      const res = await axios.get("http://localhost:1100/api/examboard");
-      setExamBoards(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch exam boards", err);
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -97,7 +56,10 @@ export default function TopicManager() {
     };
 
     try {
-      await axios.post("http://localhost:1100/api/topic", submitData);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_TOPICS_API_KEY} `,
+        submitData
+      );
       Swal.fire("Success", "Topic created successfully", "success");
       setFormData({ topicName: "", subjectId: null, active: true });
       setSelectedSubject(null);
@@ -114,8 +76,6 @@ export default function TopicManager() {
       Swal.fire("Error", "Failed to submit topic", "error");
     }
   };
-
- 
 
   return (
     <div className="mx-10">
@@ -154,11 +114,17 @@ export default function TopicManager() {
           required
         >
           <option value="">Select Exam</option>
-          {examBoards.filter((eb)=> eb.examBoardShortName.toLowerCase() === selectedBoard.toLowerCase()).map((exam, i) => (
-            <option key={i} value={exam.examName}>
-              {exam.examName.toUpperCase()}
-            </option>
-          ))}
+          {examBoards
+            .filter(
+              (eb) =>
+                eb.examBoardShortName.toLowerCase() ===
+                selectedBoard.toLowerCase()
+            )
+            .map((exam, i) => (
+              <option key={i} value={exam.examName}>
+                {exam.examName.toUpperCase()}
+              </option>
+            ))}
         </select>
 
         <select
@@ -170,8 +136,13 @@ export default function TopicManager() {
           <option value="">Select Subject</option>
           {subjects.map((subject) => {
             const label = subject.subjectName.toUpperCase();
-            const examBoard = examBoards.find((eb) => eb.id === subject.examId);
-            if (examBoard?.examName.toLowerCase() !== selectedExam.toLowerCase()) return null; // Filter subjects based on selected exam
+            const examBoard = examBoards.find(
+              (eb) => Number(eb.id) === subject.examId
+            );
+            if (
+              examBoard?.examName.toLowerCase() !== selectedExam.toLowerCase()
+            )
+              return null; // Filter subjects based on selected exam
 
             return (
               <option key={subject.id} value={subject.id}>
@@ -218,7 +189,7 @@ export default function TopicManager() {
               <tbody>
                 {topics.map((topic, i) => {
                   const subject = subjects.find(
-                    (s) => s.id === topic.subjectId
+                    (eb) => Number(eb.id) === topic.subjectId
                   );
 
                   const examBoard = examBoards.find(
@@ -227,7 +198,9 @@ export default function TopicManager() {
 
                   return (
                     <tr key={i} className="hover:bg-gray-50">
-                      <td className="p-2 border">{topic.topicName.toUpperCase().toUpperCase()}</td>
+                      <td className="p-2 border">
+                        {topic.topicName.toUpperCase().toUpperCase()}
+                      </td>
                       <td className="p-2 border">
                         {subject?.subjectName.toUpperCase() || "N/A"}
                       </td>
@@ -242,22 +215,22 @@ export default function TopicManager() {
                       </td>
 
                       <td className="p-2 border">
-                      <svg
-                        className="w-6 h-6 text-black hover:text-red-600 cursor-pointer"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        // onClick={() => handleEdit(e.id)}
-                      >
-                        <path
-                          d="M18.945 9.188l-4-4m4 4l-4.999 4.998a6.22 6.22 0 01-2.376 1.337c-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626a6.22 6.22 0 011.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5S3.5 18.5 3.5 12 5.5 3.5 12 3.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </td>
+                        <svg
+                          className="w-6 h-6 text-black hover:text-red-600 cursor-pointer"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          // onClick={() => handleEdit(e.id)}
+                        >
+                          <path
+                            d="M18.945 9.188l-4-4m4 4l-4.999 4.998a6.22 6.22 0 01-2.376 1.337c-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626a6.22 6.22 0 011.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5S3.5 18.5 3.5 12 5.5 3.5 12 3.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </td>
                     </tr>
                   );
                 })}
