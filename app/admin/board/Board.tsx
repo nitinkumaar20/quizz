@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useGlobalDataStore } from "../../stores/globalDataStores";
 import { ExamBoardType } from "../../stores/globalDataStores";
+import { TablePagination } from "@/app/components/Table";
 
 export default function ExamBoardManager() {
   const { examBoards, fetchExamBoards } = useGlobalDataStore();
@@ -112,7 +113,7 @@ export default function ExamBoardManager() {
 
   useEffect(() => {
     fetchExamBoards();
-  }, []);
+  }, [fetchExamBoards]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -285,48 +286,11 @@ export default function ExamBoardManager() {
         <h2 className="text-xl font-semibold mb-2">All Exam Boards</h2>
         {examBoards.length > 0 ? (
           <div className="w-full border rounded bg-white">
-            <table className="w-full text-left">
-              <thead className="sticky top-0 bg-gray-100 z-10">
-                <tr>
-                  <th className="p-2 border">Type</th>
-                  <th className="p-2 border">Long Name</th>
-                  <th className="p-2 border">Short Name</th>
-                  <th className="p-2 border">Exam Name</th>
-                  <th className="p-2 border">Active</th>
-                  <th className="p-2 border">Edit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {examBoards.map((board, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="p-2 border">{board.examBoardType}</td>
-                    <td className="p-2 border">{board.examBoardLongName}</td>
-                    <td className="p-2 border">{board.examBoardShortName}</td>
-                    <td className="p-2 border">{board.examName}</td>
-                    <td className="p-2 border">
-                      {board.active ? "Yes" : "No"}
-                    </td>
-                    <td className="p-2 border">
-                      <svg
-                        className="w-8 h-8 text-black hover:text-[#ff0101] "
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        onClick={() => handleEdit(board.id)}
-                      >
-                        <path
-                          d="m18.945 9.188-4-4m4 4-4.999 4.998c-.659.659-1.458 1.179-2.376 1.337-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626.158-.918.678-1.717 1.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5s-8.5-2-8.5-8.5 2-8.5 8.5-8.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <TablePagination
+              examBoards={examBoards}
+              component="board"
+              handleEdit={handleEdit}
+            />
           </div>
         ) : (
           <p>No exam boards found.</p>

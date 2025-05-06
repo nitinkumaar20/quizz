@@ -3,7 +3,7 @@ import { create } from "zustand";
 import axios from "axios";
 
 export interface ExamBoardType {
-    id?: string;
+  id?: string;
   examBoardType: string;
   examBoardLongName: string;
   examBoardShortName: string;
@@ -15,11 +15,11 @@ export interface ExamBoardType {
 
 export interface SubjectType {
   id?: string;
-    subjectName: string;
-    examId: number | null;
-    ownerId: number | null;
-    active: boolean;
-    accessType: "PUBLIC" | "PRIVATE";
+  subjectName: string;
+  examId: number | null;
+  ownerId: number | null;
+  active: boolean;
+  accessType: "PUBLIC" | "PRIVATE";
 }
 
 export interface TopicType {
@@ -56,21 +56,18 @@ export interface QuestionType {
 }
 
 interface GlobalDataState {
- 
   examBoards: ExamBoardType[];
   subjects: SubjectType[];
   topics: TopicType[];
   rounds: RoundType[];
-  questions: QuestionType[],
+  questions: QuestionType[];
   loading: boolean;
   fetchExamBoards: () => Promise<void>;
   fetchSubjects: () => Promise<void>;
   fetchTopics: () => Promise<void>;
   fetchRounds: () => Promise<void>;
   fetchQuestions: () => Promise<void>;
-
 }
-
 
 export const useGlobalDataStore = create<GlobalDataState>((set) => ({
   examBoards: [],
@@ -83,8 +80,10 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
   fetchExamBoards: async () => {
     set({ loading: true });
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}`);
-      set({ examBoards: (res.data.data)     ? res.data.data : [] });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}`
+      );
+      set({ examBoards: res.data.data ? res.data.data : [] });
       // Check if the response is an array and set it accordingly
     } catch (error) {
       console.error("Error fetching exam boards:", error);
@@ -96,8 +95,10 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
   fetchSubjects: async () => {
     set({ loading: true });
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}`);
-      set({ subjects: (res.data.data) ? res.data.data : [] });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}`
+      );
+      set({ subjects: res.data.data ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching subjects:", error);
     } finally {
@@ -109,7 +110,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     set({ loading: true });
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_TOPICS_API_KEY}`);
-      set({ topics: (res.data.data) ? res.data.data : [] });
+      set({ topics: res.data.data ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching topics:", error);
     } finally {
@@ -121,7 +122,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     set({ loading: true });
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_ROUNDS_API_KEY}`);
-      set({ rounds: (res.data.data) ? res.data.data : [] });
+      set({ rounds: res.data.data ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching rounds:", error);
     } finally {
@@ -131,10 +132,12 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
   fetchQuestions: async () => {
     set({ loading: true });
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`);
-      console.log(res,'log');  
-      
-      set({ questions: (res.data.data) ? res.data.data : [] });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`
+      );
+      console.log(res, "log");
+
+      set({ questions: res.data.data ? res.data.data : [] });
     } catch (error) {
       console.error("Error fetching rounds:", error);
     } finally {
