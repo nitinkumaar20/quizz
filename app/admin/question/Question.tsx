@@ -6,9 +6,7 @@ import Swal from "sweetalert2";
 
 import { useGlobalDataStore } from "../../stores/globalDataStores";
 import { QuestionType } from "../../stores/globalDataStores";
-
-
-
+import { TablePagination } from "@/app/components/Table";
 
 export default function QuestionManager() {
   const {
@@ -69,7 +67,6 @@ export default function QuestionManager() {
     setEditId(undefined);
   };
 
-
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -115,7 +112,10 @@ export default function QuestionManager() {
     }
 
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`, formData);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`,
+        formData
+      );
       Swal.fire("Success", "Question added successfully", "success");
       resetForm();
       fetchQuestions();
@@ -125,9 +125,12 @@ export default function QuestionManager() {
     }
   };
 
-  const handleEdit = (question: QuestionType) => {
-    setFormData(question);
-    setEditId(question.id);
+  const handleEdit = (id: string | undefined) => {
+    const questionToEdit = questions.find((s) => s.id === id);
+    if (questionToEdit) {
+      setFormData(questionToEdit);
+      setEditId(id);
+    }
     setIsEditModalOpen(true);
   };
 
@@ -135,7 +138,10 @@ export default function QuestionManager() {
     if (!editId) return;
 
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}/${editId}`, formData);
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}/${editId}`,
+        formData
+      );
       Swal.fire("Updated!", "Question updated successfully.", "success");
       resetForm();
       setIsEditModalOpen(false);
@@ -480,62 +486,15 @@ export default function QuestionManager() {
       <div className="mt-10">
         <h2 className="text-xl font-bold mb-4">All Questions</h2>
         <div className="overflow-x-auto">
-          <table className="w-full border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">Question</th>
-                <th className="p-2 border">Title</th>
-                <th className="p-2 border">Board</th>
-                <th className="p-2 border">Exam</th>
-                <th className="p-2 border">Subject</th>
-                <th className="p-2 border">Topic</th>
-                <th className="p-2 border">Round</th>
-                <th className="p-2 border">Year</th>
-                <th className="p-2 border">Edit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questions.map((q, idx) => {
-                const topic = topics.find((t) => Number(t.id) === q.topicId);
-                const subject = subjects.find((s) => s.id === topic?.subjectId);
-                const examBoard = examBoards.find(
-                  (eb) => eb.id === subject?.examId
-                );
-
-                return (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="p-2 border">{q.questionText}</td>
-                    <td className="p-2 border">{q.questionTitle}</td>
-                    <td className="p-2 border">
-                      {examBoard?.examBoardShortName.toUpperCase() || "N/A"}
-                    </td>
-                    <td className="p-2 border">
-                      {examBoard?.examName.toUpperCase() || "N/A"}
-                    </td>
-                    <td className="p-2 border">
-                      {subject?.subjectName.toUpperCase() || "N/A"}
-                    </td>
-                    <td className="p-2 border">
-                      {topic?.topicName.toUpperCase() || "N/A"}
-                    </td>
-                    <td className="p-2 border">{q.questionYear}</td>
-                    <td className="p-2 border">
-                      {rounds.find((r) => Number(r.id) === q.roundId)
-                        ?.roundName || "N/A"}
-                    </td>
-                    <td className="p-2 border">
-                      <button
-                        onClick={() => handleEdit(q)}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <TablePagination
+            examBoards={examBoards}
+            questions={questions}
+            subjects={subjects}
+            rounds={rounds}
+            topics={topics}
+            component="question"
+            handleEdit={handleEdit}
+          />
         </div>
       </div>
     </div>

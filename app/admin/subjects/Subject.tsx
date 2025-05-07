@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useGlobalDataStore } from "../../stores/globalDataStores";
 import { SubjectType } from "../../stores/globalDataStores";
+import { TablePagination } from "@/app/components/Table";
 
 export default function SubjectManager() {
   const { fetchSubjects, subjects, examBoards, fetchExamBoards } =
     useGlobalDataStore();
-
 
   const [formData, setFormData] = useState<SubjectType>({
     subjectName: "",
@@ -30,8 +30,6 @@ export default function SubjectManager() {
     fetchSubjects();
     fetchExamBoards();
   }, []);
-
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -348,56 +346,12 @@ export default function SubjectManager() {
         <h2 className="text-xl font-semibold mb-2">All Subjects</h2>
         {subjects.length > 0 ? (
           <div className="w-full border rounded bg-white">
-            <table className="w-full text-left">
-              <thead className="sticky top-0 bg-gray-100 z-10">
-                <tr>
-                  <th className="p-2 border">Subject</th>
-                  <th className="p-2 border">Exam</th>
-                  <th className="p-2 border">Board</th>
-
-                  <th className="p-2 border">Access</th>
-                  <th className="p-2 border">Active</th>
-                  <th className="p-2 border">Edit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subj, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="p-2 border">{subj.subjectName}</td>
-                    <td className="p-2 border">
-                      {examBoards
-                        .find((eb) => Number(eb.id) === subj.examId)
-                        ?.examName.toUpperCase() || "N/A"}
-                    </td>
-                    <td className="p-2 border">
-                      {examBoards
-                        .find((eb) => Number(eb.id) === subj.examId)
-                        ?.examBoardShortName.toUpperCase() || "N/A"}
-                    </td>
-
-                    <td className="p-2 border">{subj.accessType}</td>
-                    <td className="p-2 border">{subj.active ? "Yes" : "No"}</td>
-                    <td className="p-2 border">
-                      <svg
-                        className="w-6 h-6 text-black hover:text-red-600 cursor-pointer"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        onClick={() => handleEdit(subj.id)}
-                      >
-                        <path
-                          d="M18.945 9.188l-4-4m4 4l-4.999 4.998a6.22 6.22 0 01-2.376 1.337c-.927.16-2.077.213-2.626-.335-.548-.549-.495-1.7-.335-2.626a6.22 6.22 0 011.337-2.376l4.998-4.998m4 4s3-3 1-5-5 1-5 1M20.5 12c0 6.5-2 8.5-8.5 8.5S3.5 18.5 3.5 12 5.5 3.5 12 3.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <TablePagination
+              examBoards={examBoards}
+              component="subject"
+              subjects={subjects}
+              handleEdit={handleEdit}
+            />
           </div>
         ) : (
           <p>No subjects found.</p>
