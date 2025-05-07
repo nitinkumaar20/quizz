@@ -64,6 +64,8 @@ interface GlobalDataState {
   questions: QuestionType[],
   loading: boolean;
   fetchExamBoards: () => Promise<void>;
+  addExamBoard: (payload: ExamBoardType) => boolean;
+  updateExamBoard: (payload: ExamBoardType) => boolean;
   fetchSubjects: () => Promise<void>;
   fetchTopics: () => Promise<void>;
   fetchRounds: () => Promise<void>;
@@ -72,7 +74,7 @@ interface GlobalDataState {
 }
 
 
-export const useGlobalDataStore = create<GlobalDataState>((set) => ({
+export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
   examBoards: [],
   subjects: [],
   topics: [],
@@ -91,6 +93,29 @@ export const useGlobalDataStore = create<GlobalDataState>((set) => ({
     } finally {
       set({ loading: false });
     }
+  },
+  
+  addExamBoard: (payload: ExamBoardType) => {
+    const { examBoards } = get();
+    const newExamBoards: ExamBoardType[] = [payload, ...examBoards];
+    console.log(newExamBoards)
+    set((state) => ({...state, examBoards: newExamBoards}));
+    return true;
+  },
+
+  updateExamBoard: (payload: ExamBoardType) => {
+    let res = false;
+    const { examBoards } = get();
+    const newExamBoards: ExamBoardType[] = [];
+    examBoards.forEach((e) => {
+      if (e.id === payload.id) {
+        newExamBoards.push(payload);
+        res = true;
+      }
+      else newExamBoards.push(e);
+    })
+    set((state) => ({...state, examBoards: newExamBoards}));
+    return res;
   },
 
   fetchSubjects: async () => {

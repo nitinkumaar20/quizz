@@ -6,7 +6,7 @@ import { useGlobalDataStore } from "../../stores/globalDataStores";
 import { ExamBoardType } from "../../stores/globalDataStores";
 
 export default function ExamBoardManager() {
-  const { examBoards, fetchExamBoards } = useGlobalDataStore();
+  const { examBoards, fetchExamBoards, updateExamBoard, addExamBoard } = useGlobalDataStore();
 
   const [formData, setFormData] = useState<ExamBoardType>({
     examBoardType: "",
@@ -25,7 +25,7 @@ export default function ExamBoardManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(
+      const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}`,
         formData
       );
@@ -38,7 +38,9 @@ export default function ExamBoardManager() {
         examLogo: "none",
         active: false,
       });
-      fetchExamBoards(); // refetch after post
+      if (data.data && data.data.length > 0) {
+        addExamBoard(data.data[0]);
+      }
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.data?.message?.meta) {
         console.error(
@@ -80,7 +82,7 @@ export default function ExamBoardManager() {
     if (!editId) return;
 
     try {
-      await axios.put(
+      const { data } = await axios.put(
         `${process.env.NEXT_PUBLIC_EXAMBOARD_API_KEY}/${editId}`,
         formData
       );
@@ -100,7 +102,9 @@ export default function ExamBoardManager() {
         examLogo: "none",
         active: false,
       });
-      fetchExamBoards();
+      if (data.data && data.data.length > 0) {
+        updateExamBoard(data.data[0]);
+      }
     } catch {
       Swal.fire({
         title: "Error!",
@@ -111,7 +115,7 @@ export default function ExamBoardManager() {
   };
 
   useEffect(() => {
-    fetchExamBoards();
+    examBoards.length === 0 && fetchExamBoards();
   }, []);
 
   const handleChange = (
