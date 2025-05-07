@@ -286,7 +286,7 @@ export default function QuestionManager() {
       {/* Add New Question Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 max-w-2xl bg-white p-6 rounded-lg shadow-md"
+        className="space-y-4 max-w-5xl bg-white p-6 rounded-lg shadow-md"
       >
         <input
           name="questionTitle"

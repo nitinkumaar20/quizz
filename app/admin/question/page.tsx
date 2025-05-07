@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import QuestionManager from './Question';
 import UploadQuestionsFromWord from './Bulkquestion';
+import New from './New';
 
 const QuestionPage = () => {
   const [showUpload, setShowUpload] = useState(false);
@@ -27,7 +28,7 @@ const QuestionPage = () => {
         </div>
       </div>
 
-      {showUpload ? <UploadQuestionsFromWord /> : <QuestionManager />}
+      {showUpload ? <UploadQuestionsFromWord /> : <New />}
     </div>
   );
 };
