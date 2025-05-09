@@ -20,7 +20,7 @@ export default function New() {
         fetchTopics,
         fetchExamBoards,
     } = useGlobalDataStore();
-    console.log(questions, "questions");
+    // console.log(questions, "questions");
 
     const [selectedBoard, setSelectedBoard] = useState("");
 

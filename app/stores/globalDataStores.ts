@@ -1,6 +1,7 @@
 // src/stores/globalDataStore.ts
 import { create } from "zustand";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export interface ExamBoardType {
   id?: string;
@@ -69,8 +70,13 @@ interface GlobalDataState {
   fetchTopics: () => Promise<void>;
   fetchRounds: () => Promise<void>;
   fetchQuestions: () => Promise<void>;
+    showAlert: (params: {
+    icon?: "success" | "error" | "warning" | "info" | "question";
+    title?: string;
+    text?: string;
+    confirmButtonText?: string;
+  }) => void;
 }
-
 
 export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
   examBoards: [],
@@ -89,17 +95,17 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       set({ examBoards: res.data.data ? res.data.data : [] });
       // Check if the response is an array and set it accordingly
     } catch (error) {
-      console.error("Error fetching exam boards:", error);
     } finally {
       set({ loading: false });
     }
   },
-  
+
   addExamBoard: (payload: ExamBoardType) => {
     const { examBoards } = get();
     const newExamBoards: ExamBoardType[] = [payload, ...examBoards];
-    console.log(newExamBoards)
-    set((state) => ({...state, examBoards: newExamBoards}));
+    // console.log(newExamBoards)
+  
+    set((state) => ({ ...state, examBoards: newExamBoards }));
     return true;
   },
 
@@ -111,10 +117,9 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       if (e.id === payload.id) {
         newExamBoards.push(payload);
         res = true;
-      }
-      else newExamBoards.push(e);
-    })
-    set((state) => ({...state, examBoards: newExamBoards}));
+      } else newExamBoards.push(e);
+    });
+    set((state) => ({ ...state, examBoards: newExamBoards }));
     return res;
   },
 
@@ -126,7 +131,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       );
       set({ subjects: res.data.data ? res.data.data : [] });
     } catch (error) {
-      console.error("Error fetching subjects:", error);
+      // console.error("Error fetching subjects:", error);
     } finally {
       set({ loading: false });
     }
@@ -138,7 +143,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       const res = await axios.get(`${process.env.NEXT_PUBLIC_TOPICS_API_KEY}`);
       set({ topics: res.data.data ? res.data.data : [] });
     } catch (error) {
-      console.error("Error fetching topics:", error);
+      // console.error("Error fetching topics:", error);
     } finally {
       set({ loading: false });
     }
@@ -150,7 +155,7 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       const res = await axios.get(`${process.env.NEXT_PUBLIC_ROUNDS_API_KEY}`);
       set({ rounds: res.data.data ? res.data.data : [] });
     } catch (error) {
-      console.error("Error fetching rounds:", error);
+      // console.error("Error fetching rounds:", error);
     } finally {
       set({ loading: false });
     }
@@ -161,13 +166,29 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}`
       );
-      console.log(res, "log");
+      // console.log(res, "log");
 
       set({ questions: res.data.data ? res.data.data : [] });
     } catch (error) {
-      console.error("Error fetching rounds:", error);
+      // console.error("Error fetching rounds:", error);
     } finally {
       set({ loading: false });
     }
+  },
+
+  
+
+  showAlert: ({
+    icon = "info",
+    title = "Alert",
+    text = "",
+    confirmButtonText = "OK",
+  }) => {
+    Swal.fire({
+      icon,
+      title,
+      text,
+      confirmButtonText,
+    });
   },
 }));

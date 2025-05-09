@@ -39,6 +39,11 @@ export default function ExamBoardManager() {
         examLogo: "none",
         active: false,
       });
+      Swal.fire({
+        title: "Created!",
+        text: "Exam board successfully created.",
+        icon: "success",
+      });
       if (data.data && data.data.length > 0) {
         addExamBoard(data.data[0]);
       }
@@ -105,6 +110,7 @@ export default function ExamBoardManager() {
       });
       if (data.data && data.data.length > 0) {
         updateExamBoard(data.data[0]);
+        
       }
     } catch {
       Swal.fire({

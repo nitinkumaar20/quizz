@@ -20,7 +20,6 @@ export default function QuestionManager() {
     fetchTopics,
     fetchExamBoards,
   } = useGlobalDataStore();
-  console.log(questions, "questions");
 
   const [selectedBoard, setselectedBoard] = useState("");
   const [selectedExamName, setselectedExamName] = useState("");
@@ -87,7 +86,7 @@ export default function QuestionManager() {
           : value,
     }));
 
-    console.log(formData, "formData ques");
+  
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
