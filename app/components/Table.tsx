@@ -121,6 +121,7 @@ export const TablePagination = ({
             <th className="p-2 border">Topic</th>
             <th className="p-2 border">Round</th>
             <th className="p-2 border">Year</th>
+            <th className="p-2 border">Active</th>
             <th className="p-2 border">Edit</th>
           </tr>
         );
@@ -230,27 +231,28 @@ export const TablePagination = ({
             <td className="p-2 border">
               {examBoards
                 ?.find((eb) => eb.id === subject?.examId)
-                ?.examBoardShortName.toUpperCase() || "N/A"}
+                ?.examBoardShortName?.toUpperCase() || "N/A"}
             </td>
             <td className="p-2 border">
               {examBoards
                 ?.find((eb) => eb.id === subject?.examId)
-                ?.examName.toUpperCase() || "N/A"}
+                ?.examName?.toUpperCase() || "N/A"}
             </td>
             <td className="p-2 border">
               {" "}
-              {subject?.subjectName.toUpperCase() || "N/A"}
+              {subject?.subjectName?.toUpperCase() || "N/A"}
             </td>
             <td className="p-2 border">
               {" "}
-              {topic?.topicName.toUpperCase() || "N/A"}
+              {topic?.topicName?.toUpperCase() || "N/A"}
             </td>
             <td className="p-2 border">
               {" "}
               {rounds?.find((r) => Number(r.id) === item.roundId)?.roundName ||
                 "N/A"}
             </td>
-            <td className="p-2 border">{item.questionYear}</td>
+            <td className="p-2 border">{item?.questionYear}</td>
+            <td className="p-2 border">{item?.active ? "Yes" : "No"}</td>
             <td className="p-2 border">{renderEditIcon(item)}</td>
           </tr>
         );

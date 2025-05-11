@@ -45,6 +45,8 @@ export default function Bulkquestion() {
     fetchSubjects,
     questions,
     showAlert,
+    addQuestions,
+    updateQuestion,
   } = useGlobalDataStore();
 
   const [file, setFile] = useState<File | null>(null);
@@ -55,6 +57,10 @@ export default function Bulkquestion() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
   const [selectedTopicId, setSelectedTopicId] = useState<string>("");
   const [selectedRoundId, setSelectedRoundId] = useState<string>("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<any>(null);
+
+
 
   const filteredSubjects = subjects.filter(
     (s) => String(s.examId) === selectedBoardId
@@ -74,11 +80,11 @@ export default function Bulkquestion() {
   };
 
   useEffect(() => {
-    fetchQuestions();
-    fetchRounds();
-    fetchTopics();
-    fetchExamBoards();
-    fetchSubjects();
+    questions.length === 0 && fetchQuestions();
+    rounds.length === 0 && fetchRounds();
+    topics.length === 0 && fetchTopics();
+    examBoards.length === 0 && fetchExamBoards();
+    subjects.length === 0 && fetchSubjects();
   }, []);
 
   const normalizeHeaders = (rows: any[]) => {
@@ -152,12 +158,6 @@ export default function Bulkquestion() {
           confirmButtonText: "OK",
         });
       } else {
-        // showAlert({
-        //   icon: "success",
-        //   title: "Success",
-        //   text: `Successfully processed ${validData.length} questions!`,
-        //   confirmButtonText: "OK",
-        // });
         setData(validData);
         setIsModalOpen(true); // Show modal
       }
@@ -216,7 +216,11 @@ export default function Bulkquestion() {
         `${process.env.NEXT_PUBLIC_QUESTIONS_bulk_API_KEY}`,
         payload
       );
-
+      if (response.data.data && response.data.data.length > 0) {
+        // updateExamBoard(data.data[0]);
+        addQuestions(response.data.data);
+        console.log(response.data.data, "response.data.data");
+      }
       if (response.status === 201) {
         Swal.fire({
           icon: "success",
@@ -226,14 +230,12 @@ export default function Bulkquestion() {
         });
         setData(null);
         setFile(null);
-        
       } else {
-
         Swal.fire({
           icon: "error",
           title: "Error",
           text: `❌ Upload failed: ${
-           response.data.message || "Unexpected response status"
+            response.data.message || "Unexpected response status"
           }`,
           confirmButtonText: "OK",
         });
@@ -252,7 +254,67 @@ export default function Bulkquestion() {
     }
   };
 
-  const handleEdit = (id: string | undefined) => {};
+  const handleEdit = async (id: string | undefined) => {
+    if (!id) return;
+    try {
+      const question = questions.find((q) => q.id === id);
+
+      setEditingQuestion(question);
+      setEditModalOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch question:", error);
+      showAlert({
+        icon: "error",
+        title: "Error",
+        text: "Failed to fetch question for editing.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const handleUpdateQuestion = async () => {
+    try {
+      const { id } = editingQuestion;
+      const updatedData = {
+        questionText: editingQuestion.questionText,
+        questionTitle: editingQuestion.questionTitle,
+        answerA: editingQuestion.answerA,
+        answerB: editingQuestion.answerB,
+        answerC: editingQuestion.answerC,
+        answerD: editingQuestion.answerD,
+        answerCorrect: editingQuestion.answerCorrect,
+        questionYear: editingQuestion.questionYear,
+        topicId: editingQuestion.topicId,
+        roundId: editingQuestion.roundId,
+        active: editingQuestion.active,
+      };
+      const res = await axios.put(
+        `${process.env.NEXT_PUBLIC_QUESTIONS_API_KEY}/${id}`,
+        updatedData
+      );
+
+      if (res.status === 200) {
+        showAlert({
+          icon: "success",
+          title: "Updated",
+          text: "Question updated successfully!",
+          confirmButtonText: "OK",
+        });
+        updateQuestion(res.data.data[0]);
+        setEditModalOpen(false);
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (err) {
+      console.error(err);
+      showAlert({
+        icon: "error",
+        title: "Error",
+        text: "Failed to update question.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
 
   return (
     <div className="mx-10">
@@ -276,8 +338,8 @@ export default function Bulkquestion() {
             <option value="">Select Exam Board</option>
             {examBoards.map((board: ExamBoardType) => (
               <option key={board.id} value={String(board.id)}>
-                {board.examBoardShortName.toUpperCase()} -{" "}
-                {board.examName.toUpperCase()}
+                {board.examBoardShortName?.toUpperCase()} -{" "}
+                {board.examName?.toUpperCase()}
               </option>
             ))}
           </select>
@@ -357,6 +419,230 @@ export default function Bulkquestion() {
         </button>
       </div>
 
+
+{editModalOpen && editingQuestion && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-3xl shadow-lg">
+      <h2 className="text-lg font-semibold mb-4">Edit Question</h2>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* Exam Board */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Exam Board</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.examBoardId || ""}
+            onChange={(e) => {
+              const examBoardId = Number(e.target.value);
+              setEditingQuestion({
+                ...editingQuestion,
+                examBoardId,
+                examId: "", // reset child
+              });
+            }}
+          >
+            <option value="">Select Exam Board</option>
+            {examBoards.map((board) => (
+              <option key={board.id} value={board.id}>
+                {board.examBoardShortName}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Exam */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Exam</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.examId || ""}
+            onChange={(e) => {
+              const examId = Number(e.target.value);
+              setEditingQuestion({
+                ...editingQuestion,
+                examId,
+                subjectId: "", // reset child
+              });
+            }}
+          >
+            <option value="">Select Exam</option>
+            {
+              examBoards
+                .filter((board) => board.id === editingQuestion.examBoardId)
+                .map((board) => (
+                  <option key={board.id} value={board.id}>
+                    {board.examName}
+                  </option>
+                ))
+            }
+          </select>
+        </div>
+
+        {/* Subject */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Subject</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.subjectId || ""}
+            onChange={(e) =>
+              setEditingQuestion({
+                ...editingQuestion,
+                subjectId: Number(e.target.value),
+                topicId: "", // reset child
+              })
+            }
+          >
+            <option value="">Select Subject</option>
+            {
+              subjects
+                .filter((s) => s.examId === editingQuestion.examId)
+                .map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.subjectName}
+                  </option>
+                ))
+            }
+          </select>
+        </div>
+
+        {/* Topic */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Topic</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.topicId || ""}
+            onChange={(e) =>
+              setEditingQuestion({ ...editingQuestion, topicId: Number(e.target.value) })
+            }
+          >
+            <option value="">Select Topic</option>
+            {
+              topics
+                .filter((t) => t.subjectId === editingQuestion.subjectId)
+                .map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.topicName}
+                  </option>
+                )) 
+            }
+          </select>
+        </div>
+
+        {/* Round */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Round</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.roundId || ""}
+            onChange={(e) =>
+              setEditingQuestion({ ...editingQuestion, roundId: Number(e.target.value) })
+            }
+          >
+            <option value="">Select Round</option>
+            {
+              rounds
+                .filter((r) => r.examId === editingQuestion.examBoardId)
+                .map((round) => (
+                  <option key={round.id} value={round.id}>
+                    {round.roundName}
+                  </option>
+                ))
+            }
+          </select>
+        </div>
+        {/* Active Status */}
+<div className="flex items-center space-x-2 mt-2">
+  <input
+    type="checkbox"
+    id="active"
+    checked={editingQuestion.active || false}
+    onChange={(e) =>
+      setEditingQuestion({ ...editingQuestion, active: e.target.checked })
+    }
+  />
+  <label htmlFor="active" className="text-sm font-medium">Active</label>
+</div>
+
+      </div>
+
+      {/* Text fields */}
+      <div className="grid grid-cols-2 gap-4 mt-5">
+        {[
+          "questionTitle",
+          "questionText",
+          "answerA",
+          "answerB",
+          "answerC",
+          "answerD",
+        ].map((field) => (
+          <div key={field}>
+            <label className="block text-sm font-medium capitalize mb-1">
+              {field.replace("answer", "Answer ")}
+            </label>
+            <input
+              type="text"
+              className="w-full border px-2 py-1 rounded"
+              value={editingQuestion[field] || ""}
+              onChange={(e) =>
+                setEditingQuestion({ ...editingQuestion, [field]: e.target.value })
+              }
+            />
+          </div>
+        ))}
+
+        {/* Correct Answer */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Correct Answer</label>
+          <select
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.answerCorrect}
+            onChange={(e) =>
+              setEditingQuestion({ ...editingQuestion, answerCorrect: e.target.value })
+            }
+          >
+            <option value="">Select Correct Option</option>
+            {["A", "B", "C", "D"].map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Year */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Year</label>
+          <input
+            type="text"
+            className="w-full border px-2 py-1 rounded"
+            value={editingQuestion.questionYear || ""}
+            onChange={(e) =>
+              setEditingQuestion({ ...editingQuestion, questionYear: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="mt-6 flex justify-end gap-2">
+        <button
+          className="px-4 py-2 text-sm bg-gray-300 rounded hover:bg-gray-400"
+          onClick={() => setEditModalOpen(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+          onClick={handleUpdateQuestion}
+        >
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
       {/* Modal Preview */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -377,6 +663,17 @@ export default function Bulkquestion() {
                       <th className="px-2 py-1 border">C</th>
                       <th className="px-2 py-1 border">D</th>
                       <th className="px-2 py-1 border">Correct</th>
+                      {/* <div className="flex gap-2">
+
+                      <th className="px-2 py-1 border">Board</th>
+                      <th className="px-2 py-1 border">Exam</th>
+                      </div>
+                      <div className="flex gap-2">
+                        <th className="px-2 py-1 border">Subejct</th>
+                      <th className="px-2 py-1 border">Topic</th>
+                      <th className="px-2 py-1 border">Round</th>
+                      </div> */}
+                
                     </tr>
                   </thead>
                   <tbody>
@@ -398,6 +695,36 @@ export default function Bulkquestion() {
                         <td className="px-2 py-1 border font-bold text-green-600">
                           {item.answerCorrect}
                         </td>
+                        {/* <div className="flex gap-2">
+
+                      <th className="px-2 py-1 border">{
+                          examBoards.find(
+                            (board) => board.id === selectedBoardId
+                          )?.examBoardShortName?.toUpperCase()
+                        
+                        }</th>
+                      <th className="px-2 py-1 border">{
+                          examBoards.find(
+                            (board) => board.id === selectedBoardId
+                          )?.examName?.toUpperCase()
+                        }</th>
+                      </div>
+                      <div className="flex gap-2">
+                        <th className="px-2 py-1 border">{
+                          subjects.find(
+                            (subject) => subject.id === selectedSubjectId
+                          )?.subjectName.toUpperCase()
+
+                          }</th>
+                      <th className="px-2 py-1 border">{
+                          topics.find((topic) => topic.id === selectedTopicId)
+                            ?.topicName.toUpperCase()
+                        }</th>
+                      <th className="px-2 py-1 border">{
+                          rounds.find((round) => round.id === selectedRoundId)
+                            ?.roundName.toUpperCase()
+                        }</th>
+                      </div> */}
                       </tr>
                     ))}
                   </tbody>

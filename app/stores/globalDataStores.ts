@@ -70,7 +70,9 @@ interface GlobalDataState {
   fetchTopics: () => Promise<void>;
   fetchRounds: () => Promise<void>;
   fetchQuestions: () => Promise<void>;
-    showAlert: (params: {
+  addQuestions: (payload: QuestionType) => boolean;
+  updateQuestion: (payload: QuestionType) => boolean;
+  showAlert: (params: {
     icon?: "success" | "error" | "warning" | "info" | "question";
     title?: string;
     text?: string;
@@ -102,9 +104,11 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
 
   addExamBoard: (payload: ExamBoardType) => {
     const { examBoards } = get();
-    const newExamBoards: ExamBoardType[] = [payload, ...examBoards];
-    // console.log(newExamBoards)
-  
+    console.log(payload, "payload");
+
+    const newExamBoards: ExamBoardType[] = [...examBoards, payload];
+    console.log(newExamBoards, "newExamBoards");
+
     set((state) => ({ ...state, examBoards: newExamBoards }));
     return true;
   },
@@ -176,7 +180,48 @@ export const useGlobalDataStore = create<GlobalDataState>((set, get) => ({
     }
   },
 
-  
+  addQuestions: (payload: QuestionType | QuestionType[]) => {
+    const { questions } = get();
+
+    const newQuestions = Array.isArray(payload)
+      ? [...questions, ...payload]
+      : [...questions, payload];
+
+    set((state) => ({ ...state, questions: newQuestions }));
+
+    return true;
+  },
+updateQuestion: (payload: QuestionType) => {
+  const { questions } = get();
+  let res = false;
+console.log(payload ,'payload');
+
+  const updatedQuestions = questions.map((q) => {
+    if (q.id === payload.id) {
+      res = true;
+      return payload; // Replace the matching question
+    }
+    return q;
+  });
+console.log(updatedQuestions ,'updated qu');
+
+  set((state) => ({ ...state, questions: updatedQuestions }));
+  return res;
+},
+
+// updateExamBoard: (payload: ExamBoardType) => {
+//     let res = false;
+//     const { examBoards } = get();
+//     const newExamBoards: ExamBoardType[] = [];
+//     examBoards.forEach((e) => {
+//       if (e.id === payload.id) {
+//         newExamBoards.push(payload);
+//         res = true;
+//       } else newExamBoards.push(e);
+//     });
+//     set((state) => ({ ...state, examBoards: newExamBoards }));
+//     return res;
+//   },
 
   showAlert: ({
     icon = "info",
