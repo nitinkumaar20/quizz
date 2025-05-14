@@ -131,6 +131,7 @@ export const TablePagination = ({
   };
 
   const renderTableRow = (item: any, i: number) => {
+    
     const topic = topics?.find((t) => Number(t.id) === item.topicId);
     const subject = subjects?.find((s) => s.id === topic?.subjectId);
     switch (component) {

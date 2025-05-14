@@ -7,8 +7,22 @@ import { SubjectType } from "../../stores/globalDataStores";
 import { TablePagination } from "@/app/components/Table";
 
 export default function SubjectManager() {
-  const { fetchSubjects, subjects, examBoards, fetchExamBoards } =
-    useGlobalDataStore();
+  const {
+    fetchSubjects,
+    subjects,
+    examBoards,
+    fetchExamBoards,
+    selectedExam,
+    setSelectedExam,
+    selectedBoard,
+    setSelectedBoard,
+    editExamName,
+    setEditExamName,
+    editBoardShortName,
+    setEditBoardShortName,
+    addSubjects,
+    updateSubject,
+  } = useGlobalDataStore();
 
   const [formData, setFormData] = useState<SubjectType>({
     subjectName: "",
@@ -21,14 +35,14 @@ export default function SubjectManager() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | undefined>(undefined);
 
-  const [selectedExam, setSelectedExam] = useState<string>("");
-  const [selectedBoard, setSelectedBoard] = useState<string>("");
-  const [editExamName, setEditExamName] = useState<string>("");
-  const [editBoardShortName, setEditBoardShortName] = useState<string>("");
+  // const [selectedExam, setSelectedExam] = useState<string>("");
+  // const [selectedBoard, setSelectedBoard] = useState<string>("");
+  // const [editExamName, setEditExamName] = useState<string>("");
+  // const [editBoardShortName, setEditBoardShortName] = useState<string>("");
 
   useEffect(() => {
-    fetchSubjects();
-    fetchExamBoards();
+    subjects.length === 0 && fetchSubjects();
+    examBoards.length === 0 && fetchExamBoards();
   }, []);
 
   const handleChange = (
@@ -70,10 +84,11 @@ export default function SubjectManager() {
     };
 
     try {
-      await axios.post(
+      const res = await axios.post(
         `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}`,
         submitData
       );
+
       Swal.fire("Success", "Subject created successfully", "success");
       setFormData({
         subjectName: "",
@@ -84,12 +99,15 @@ export default function SubjectManager() {
       });
       setSelectedExam("");
       setSelectedBoard("");
-      fetchSubjects();
+
+      if (res.data.data && res.data.data.length > 0) {
+        addSubjects(res.data.data[0]);
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         console.error(
           "Error submitting subject:",
-          err.response?.data || err.message
+          err.response?.data.message || err.message
         );
       } else {
         console.error("Unexpected error:", err);
@@ -99,6 +117,8 @@ export default function SubjectManager() {
   };
 
   const handleEdit = (id: string | undefined) => {
+ 
+    
     const subjectToEdit = subjects.find((s) => s.id === id);
     if (subjectToEdit) {
       setFormData(subjectToEdit);
@@ -136,30 +156,32 @@ export default function SubjectManager() {
     };
 
     try {
-      await axios.put(
+      const res = await axios.put(
         `${process.env.NEXT_PUBLIC_SUBJECTS_API_KEY}/${editId}`,
         updateData
       );
-      Swal.fire("Updated!", "Subject updated successfully.", "success");
+      if (res.data.data && res.data.data.length > 0) {
+        Swal.fire("Updated!", "Subject updated successfully.", "success");
 
-      setIsEditModalOpen(false);
-      setEditId(undefined);
-      setFormData({
-        subjectName: "",
-        examId: null,
-        ownerId: null,
-        active: false,
-        accessType: "PUBLIC",
-      });
-      setEditExamName("");
-      setEditBoardShortName("");
-      fetchSubjects();
+        setIsEditModalOpen(false);
+        setEditId(undefined);
+        setFormData({
+          subjectName: "",
+          examId: null,
+          ownerId: null,
+          active: false,
+          accessType: "PUBLIC",
+        });
+        setEditExamName("");
+        setEditBoardShortName("");
+        updateSubject(res.data.data[0]);
+      }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("PUT error:", error.response?.data || error.message);
+        // console.error("PUT error: sss", error.response?.data.message.meta.target || error.message);
         Swal.fire(
           "Error",
-          error.response?.data?.message?.[0]?.message ||
+          error.response?.data.message.meta.target ||
             "Failed to update subject",
           "error"
         );
@@ -194,7 +216,7 @@ export default function SubjectManager() {
                 onChange={(e) => setEditBoardShortName(e.target.value)}
                 className="w-full border p-2 rounded"
               >
-                <option value="">Select Board</option>
+                <option value="">Select Board </option>
                 {[
                   ...new Set(examBoards.map((eb) => eb.examBoardShortName)),
                 ].map((board, i) => (

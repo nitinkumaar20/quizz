@@ -111,8 +111,6 @@ export default function ExamBoardManager() {
       if (data.data && data.data.length > 0) {
         updateExamBoard(data.data[0]);
        
-        
-        
       }
     } catch {
       Swal.fire({

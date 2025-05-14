@@ -434,24 +434,28 @@ export default function Bulkquestion() {
             value={editingQuestion.examBoardId || ""}
             onChange={(e) => {
               const examBoardId = Number(e.target.value);
+              const examId = Number(e.target.value);
               setEditingQuestion({
                 ...editingQuestion,
                 examBoardId,
-                examId: "", // reset child
+                examId, // reset child
               });
             }}
           >
-            <option value="">Select Exam Board</option>
-            {examBoards.map((board) => (
-              <option key={board.id} value={board.id}>
-                {board.examBoardShortName}
+            <option value="">Exam Board and Exam Name</option>
+            {
+            examBoards.map((board,i) => (
+              
+              <option key={i} value={board.id}>
+                {board.examBoardShortName + " - " + board.examName}
               </option>
             ))}
           </select>
+
         </div>
 
         {/* Exam */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium mb-1">Exam</label>
           <select
             className="w-full border px-2 py-1 rounded"
@@ -476,7 +480,7 @@ export default function Bulkquestion() {
                 ))
             }
           </select>
-        </div>
+        </div> */}
 
         {/* Subject */}
         <div>
